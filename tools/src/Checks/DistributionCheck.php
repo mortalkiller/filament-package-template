@@ -88,7 +88,7 @@ final class DistributionCheck
     }
 
     /**
-     * @param list<string> $command
+     * @param  list<string>  $command
      * @return array{int,string,string}
      */
     private function runProcess(array $command): array
