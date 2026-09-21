@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 $root = dirname(__DIR__, 2);
 $requirements = [
-    'resources/boost/skills/developing-filament-packages/SKILL.md' => ['name: developing-filament-packages', 'description:', 'Laravel Boost'],
     '.github/ISSUE_TEMPLATE/bug_report.yml' => ['Package version', 'Filament version', 'Laravel version', 'PHP version'],
     '.github/ISSUE_TEMPLATE/feature_request.yml' => ['Problem', 'Proposed API', 'Non-goals', 'Acceptance criteria'],
     '.github/PULL_REQUEST_TEMPLATE.md' => ['Related issue', 'Verification', 'Documentation', 'Public-content check'],

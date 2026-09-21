@@ -162,7 +162,7 @@ $agentInstructions = <<<'MARKDOWN'
 
 This repository follows MortalKiller Filament Package Standard v1.
 
-Canonical standard: https://github.com/mortalkiller/filament-package-template/blob/1.x/docs/package-standard.md
+Canonical standard: https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md
 
 Read `docs/development-flow.md` and the canonical standard. When the `developing-filament-packages` skill is available in your configured agent, use it. Work on temporary branches targeting the affected major. Publish immutable tags on verified major commits; do not introduce a stable-promotion branch.
 
@@ -171,7 +171,7 @@ MARKDOWN;
 $contributing = <<<'MARKDOWN'
 # Contributing
 
-Read [Development and release flow](docs/development-flow.md) and the [canonical package standard](https://github.com/mortalkiller/filament-package-template/blob/1.x/docs/package-standard.md).
+Read [Development and release flow](docs/development-flow.md) and the [canonical package standard](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md).
 
 Create a focused temporary branch from the affected major and open a PR to that same major. Include an issue and acceptance criteria for meaningful changes, preserve backwards compatibility, and update tests and source-derived documentation. Squash temporary branches after review and successful CI.
 
@@ -211,7 +211,7 @@ $removeTree = static function (string $path) use (&$removeTree): void {
     }
 };
 
-$templateOnly = ['tools', 'resources/boost/skills/developing-filament-packages', 'tests/Template', 'tests/standard-checker', 'docs/package-standard.md', 'docs/verification.md'];
+$templateOnly = ['tools', 'tests/Template', 'tests/standard-checker', 'docs/package-standard.md', 'docs/verification.md'];
 foreach (['tests', 'quality', 'docs', 'docs-release', 'browser-tests', 'standard-check'] as $workflow) {
     $templateOnly[] = '.github/workflows/reusable-'.$workflow.'.yml';
 }

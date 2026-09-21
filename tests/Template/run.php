@@ -69,7 +69,7 @@ $assertContains('https://docs.pedromonteiro.dev/filament-example/', 'README.md')
 $assertContains('uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@'.$workflowRef, '.github/workflows/tests.yml');
 $assertContains('standard-ref: '.$workflowRef, '.github/workflows/standard.yml');
 $assertContains('standard-ref: '.$workflowRef, '.github/workflows/docs-release.yml');
-$assertContains('mortalkiller/filament-package-template/blob/1.x/docs/package-standard.md', 'AGENTS.md');
+$assertContains('mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md', 'AGENTS.md');
 if (! is_file($tmp.'/src/FilamentExampleServiceProvider.php')) {
     $fail('Renamed service provider is missing.');
 }
@@ -80,7 +80,7 @@ if (in_array('package-template', $composer['keywords'] ?? [], true)) {
 if (str_contains((string) file_get_contents($tmp.'/SECURITY.md'), 'This template does not itself publish a runtime package')) {
     $fail('Template-specific security text leaked into the generated package.');
 }
-foreach (['.template', 'tools', 'resources/boost/skills/developing-filament-packages', 'tests/Template', 'tests/standard-checker', '.github/workflows/reusable-docs-release.yml'] as $removed) {
+foreach (['.template', 'tools', 'tests/Template', 'tests/standard-checker', '.github/workflows/reusable-docs-release.yml'] as $removed) {
     if (file_exists($tmp.'/'.$removed)) {
         $fail('Template-only path still exists: '.$removed);
     }

@@ -21,8 +21,8 @@ The SHA is required; a branch name or mutable tag is not accepted. The initializ
 
 Permanent branches are package-major lines. Create a temporary branch from a major, PR back to it, validate, merge, and release an immutable `vX.Y.Z` tag from a verified `X.x` commit. There is no separate stable-promotion branch.
 
-Read [Package Standard v1](docs/package-standard.md), [Development and release flow](docs/development-flow.md), and [Release checklist](docs/releasing.md).
+Read [Package Standard v1](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md), [Development and release flow](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/development-flow.md), and [Release checklist](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/releasing.md).
 
 PRs and pushes validate docs only. Stable releases publish the exact tag, maintain major channels and protect Latest from older releases. [Documentation](https://docs.pedromonteiro.dev/filament-package-template/).
 
-The maintainer [developing-filament-packages skill](resources/boost/skills/developing-filament-packages/SKILL.md) follows Laravel Boost's third-party package convention. When this template package is installed as a direct dependency in a Laravel project using Boost, `php artisan boost:update` can discover and sync the skill to configured skills-capable agents. There is no custom skill installer.
+The canonical `developing-filament-packages` skill is owned and distributed by `mortalkiller/filament-package-standard` through Laravel Boost.

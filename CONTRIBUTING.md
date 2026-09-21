@@ -1,6 +1,6 @@
 # Contributing
 
-Read [Package Standard v1](docs/package-standard.md) and [Development and release flow](docs/development-flow.md).
+Read [Package Standard v1](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md) and [Development and release flow](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/development-flow.md).
 
 Create a focused temporary branch from the affected package major (`1.x` for this template) and open a PR to that same major. The major-only flow has no separate stable-promotion branch. Use an issue and acceptance criteria for meaningful changes, preserve existing compatibility boundaries, and include tests and documentation. Squash temporary work after review and successful CI.
 
