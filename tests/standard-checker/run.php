@@ -116,6 +116,33 @@ if ($safeCode !== 0) {
     exit(6);
 }
 
+$hostPath = $makeFixture('filament-example', [
+    'readme_append' => "\n/opt/example-company/internal/app\n",
+]);
+[$hostPathCode, $hostPathOutput] = $run($hostPath);
+if ($hostPathCode !== 1 || ! str_contains($hostPathOutput, 'public_content.sensitive_pattern')) {
+    fwrite(STDERR, "Generic host-path fixture did not fail correctly:\n{$hostPathOutput}\n");
+    exit(61);
+}
+
+$ssh = $makeFixture('filament-example', [
+    'readme_append' => "\nssh -p 2222 -i ~/.ssh/deploy_key deploy@203.0.113.10\n",
+]);
+[$sshCode, $sshOutput] = $run($ssh);
+if ($sshCode !== 1 || ! str_contains($sshOutput, 'public_content.sensitive_pattern')) {
+    fwrite(STDERR, "Literal SSH infrastructure fixture did not fail correctly:\n{$sshOutput}\n");
+    exit(62);
+}
+
+$publicAsset = $makeFixture('filament-example');
+mkdir($publicAsset.'/docs-site/public', 0777, true);
+file_put_contents($publicAsset.'/docs-site/public/deploy.txt', "sk_live_1234567890abcdef\n");
+[$publicAssetCode, $publicAssetOutput] = $run($publicAsset);
+if ($publicAssetCode !== 1 || ! str_contains($publicAssetOutput, 'public_content.sensitive_pattern')) {
+    fwrite(STDERR, "Public docs asset fixture did not fail correctly:\n{$publicAssetOutput}\n");
+    exit(63);
+}
+
 $archive = $makeFixture('filament-example');
 mkdir($archive.'/playwright-report', 0777, true);
 file_put_contents($archive.'/playwright-report/report.html', "<html></html>\n");
@@ -125,6 +152,27 @@ exec('git -C '.escapeshellarg($archive).' commit -qm forbidden');
 if ($archiveCode !== 1 || ! str_contains($archiveOutput, 'distribution.development_path')) {
     fwrite(STDERR, "Distribution fixture did not fail correctly:\n{$archiveOutput}\n");
     exit(7);
+}
+
+$worktreeSource = $makeFixture('filament-example');
+$worktree = sys_get_temp_dir().'/standard-check-worktree-'.bin2hex(random_bytes(4));
+exec(
+    'git -C '.escapeshellarg($worktreeSource).' worktree add -q -b checker-worktree '.escapeshellarg($worktree),
+    $worktreeCommandOutput,
+    $worktreeCommandCode,
+);
+if ($worktreeCommandCode !== 0) {
+    fwrite(STDERR, "Unable to create worktree fixture.\n");
+    exit(71);
+}
+[$worktreeCode, $worktreeOutput] = $run($worktree);
+if (
+    $worktreeCode !== 0
+    || str_contains($worktreeOutput, 'distribution.git_unavailable')
+    || ! str_contains($worktreeOutput, 'distribution.clean')
+) {
+    fwrite(STDERR, "Worktree distribution fixture did not validate correctly:\n{$worktreeOutput}\n");
+    exit(72);
 }
 
 [$jsonCode, $jsonOutput] = $run($valid, true);
