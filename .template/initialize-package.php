@@ -23,19 +23,20 @@ $fail = static function (string $message): never {
     exit(1);
 };
 
+$templateDirectory = $root.'/.template';
+if (! is_dir($templateDirectory)) {
+    $fail('Package template has already been initialized.');
+}
+
 $composerPath = $root.'/composer.json';
 if (! is_file($composerPath)) {
-    $fail('Package template has already been initialized.');
+    $fail('Unable to read composer.json.');
 }
 
 try {
     $composer = json_decode((string) file_get_contents($composerPath), true, flags: JSON_THROW_ON_ERROR);
 } catch (Throwable) {
     $fail('Unable to read composer.json.');
-}
-
-if (($composer['name'] ?? null) !== 'mortalkiller/'.TEMPLATE_SLUG || ! is_dir($root.'/.template')) {
-    $fail('Package template has already been initialized.');
 }
 
 if (! preg_match('/^filament-[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
@@ -54,10 +55,61 @@ if ($description === '') {
     $fail('The --description value must not be empty.');
 }
 
+$requestedState = [
+    'slug' => $slug,
+    'title' => $title,
+    'namespace' => $namespace,
+    'description' => $description,
+];
+
+$statePath = $templateDirectory.'/.initializing.json';
+if (is_file($statePath)) {
+    try {
+        $state = json_decode((string) file_get_contents($statePath), true, flags: JSON_THROW_ON_ERROR);
+    } catch (Throwable) {
+        $fail('Unable to read the existing initialization state.');
+    }
+
+    if ($state !== $requestedState) {
+        $fail('Initialization is already in progress with different arguments.');
+    }
+
+    $allowedComposerNames = [
+        'mortalkiller/'.TEMPLATE_SLUG,
+        'mortalkiller/'.$slug,
+    ];
+
+    if (! in_array($composer['name'] ?? null, $allowedComposerNames, true)) {
+        $fail('The partially initialized package identity does not match the saved initialization state.');
+    }
+} else {
+    if (($composer['name'] ?? null) !== 'mortalkiller/'.TEMPLATE_SLUG) {
+        $fail('Package template has already been initialized.');
+    }
+
+    try {
+        $encodedState = json_encode(
+            $requestedState,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+        ).PHP_EOL;
+    } catch (Throwable) {
+        $fail('Unable to encode the initialization state.');
+    }
+
+    $temporaryState = $statePath.'.tmp';
+    if (
+        file_put_contents($temporaryState, $encodedState) === false
+        || ! rename($temporaryState, $statePath)
+    ) {
+        @unlink($temporaryState);
+        $fail('Unable to persist the initialization state.');
+    }
+}
+
 $segments = explode('\\', $namespace);
 $stem = (string) end($segments);
 
-$packageReadme = $root.'/.template/README.package.md';
+$packageReadme = $templateDirectory.'/README.package.md';
 if (! is_file($packageReadme)) {
     $fail('The package README template is missing.');
 }
@@ -92,26 +144,33 @@ $iterator = new RecursiveIteratorIterator(
 
 /** @var list<array{path:string,content:string}> $writes */
 $writes = [];
+
 foreach ($iterator as $file) {
     if (! $file instanceof SplFileInfo || ! $file->isFile()) {
         continue;
     }
 
     $path = $file->getPathname();
-    $content = file_get_contents($path);
-    if (! is_string($content) || str_contains($content, "\0")) {
+    $fileContent = file_get_contents($path);
+
+    if (! is_string($fileContent) || str_contains($fileContent, "\0")) {
         continue;
     }
 
-    $updated = str_replace(array_keys($replace), array_values($replace), $content);
-    if ($updated !== $content) {
+    $updated = str_replace(array_keys($replace), array_values($replace), $fileContent);
+
+    if ($updated !== $fileContent) {
         $writes[] = ['path' => $path, 'content' => $updated];
     }
 }
 
 foreach ($writes as $write) {
     $temporary = $write['path'].'.template-tmp';
-    if (file_put_contents($temporary, $write['content']) === false || ! rename($temporary, $write['path'])) {
+
+    if (
+        file_put_contents($temporary, $write['content']) === false
+        || ! rename($temporary, $write['path'])
+    ) {
         @unlink($temporary);
         $fail('Unable to rewrite ['.$write['path'].'].');
     }
@@ -119,6 +178,7 @@ foreach ($writes as $write) {
 
 $oldProvider = $root.'/src/'.TEMPLATE_STEM.'ServiceProvider.php';
 $newProvider = $root.'/src/'.$stem.'ServiceProvider.php';
+
 if (is_file($oldProvider) && $oldProvider !== $newProvider && ! rename($oldProvider, $newProvider)) {
     $fail('Unable to rename the package service provider.');
 }
@@ -132,6 +192,7 @@ $removeTree = static function (string $path) use (&$removeTree): void {
         if (! @unlink($path)) {
             throw new RuntimeException('Unable to remove ['.$path.'].');
         }
+
         return;
     }
 
@@ -139,6 +200,7 @@ $removeTree = static function (string $path) use (&$removeTree): void {
         if ($entry === '.' || $entry === '..') {
             continue;
         }
+
         $removeTree($path.'/'.$entry);
     }
 
@@ -165,7 +227,8 @@ try {
     foreach ($templateOnly as $relative) {
         $removeTree($root.'/'.$relative);
     }
-    $removeTree($root.'/.template');
+
+    $removeTree($templateDirectory);
 } catch (Throwable $exception) {
     $fail($exception->getMessage());
 }
