@@ -19,8 +19,8 @@ final class PublicContentCheck
         'GitHub token' => '/\bgh[pousr]_[A-Za-z0-9]{20,}\b/',
         'AWS access key' => '/\bAKIA[A-Z0-9]{16}\b/',
         'Stripe live secret' => '/\bsk_live_[A-Za-z0-9]{16,}\b/',
-        'production webserver path' => '#/opt/webserver/#',
-        'literal SSH infrastructure' => '/\bssh\s+(?:[^\n]*\s)?-p\s+\d{2,5}\s+(?:[^\s@]+@)?(?:\d{1,3}\.){3}\d{1,3}\b/i',
+        'host /opt path' => '#(?<![A-Za-z0-9])/opt/[A-Za-z0-9._/-]+#',
+        'literal SSH infrastructure' => '/\bssh\b[^\n]*\s-p\s+\d{2,5}[^\n]*(?:[A-Za-z0-9._-]+@)?(?:\d{1,3}\.){3}\d{1,3}\b/i',
     ];
 
     /** @var list<string> */
@@ -69,6 +69,7 @@ final class PublicContentCheck
         }
 
         $failures = 0;
+
         foreach ($files as $relative => $absolute) {
             $content = file_get_contents($absolute);
             if (! is_string($content) || str_contains($content, "\0")) {
