@@ -75,7 +75,7 @@ At inspection, the template repository still used `main` as its default branch; 
 - Review `docs-production` branch/tag policies so eligible stable release tags are permitted. Allow maintained major branches only when deliberate manual re-publication is needed. Do not remove existing reviewer or security protections.
 - Verify existing deployment configuration without exposing secret values. Real publication requires `DOCS_DEPLOY_ENABLED=true`.
 - Enable the template repository setting when the GitHub template-generation feature is intended.
-- Update installed local copies of the agent skill; repository changes do not update those copies automatically.
+- The maintainer skill follows Laravel Boost's `resources/boost/skills` convention; verify discovery and synchronization with `php artisan boost:update` in a direct-dependency integration when that environment is available.
 - Publish and verify the first genuine stable release containing the migration. A historical tag without the versioned documentation configuration must not be moved or silently built from newer branch code.
 - Confirm a fresh PlumbPHP result for the relevant scanned ref before declaring package release acceptance complete.
 

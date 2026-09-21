@@ -25,4 +25,4 @@ Read [Package Standard v1](docs/package-standard.md), [Development and release f
 
 PRs and pushes validate docs only. Stable releases publish the exact tag, maintain major channels and protect Latest from older releases. [Documentation](https://docs.pedromonteiro.dev/filament-package-template/).
 
-Install or deliberately update the [developing-filament-packages skill](skills/developing-filament-packages/SKILL.md) with its `install.sh` script. Existing installed copies do not update automatically.
+The maintainer [developing-filament-packages skill](resources/boost/skills/developing-filament-packages/SKILL.md) follows Laravel Boost's third-party package convention. When this template package is installed as a direct dependency in a Laravel project using Boost, `php artisan boost:update` can discover and sync the skill to configured skills-capable agents. There is no custom skill installer.

@@ -43,7 +43,7 @@ For a new package, set the default branch to `1.x`; do not create an extra promo
 
 `docs-production` must permit stable release tags as well as the maintained major branches used for manual re-runs. `DOCS_REMOTE_PATH` must be the absolute package directory ending in the repository slug, not the shared documentation root. The publishing runner needs Node.js and rsync; the server needs SSH, a POSIX shell and rsync. No new application/server runtime is required.
 
-When migrating an existing repository, preserve any exclusive commits before removing an old branch. Update default branches, PR targets, badges, edit links, explicit `dev-main` consumers, deployment rules and installed agent skills. Preserve all published tags. Do not delete the old branch until these checks are complete.
+When migrating an existing repository, preserve any exclusive commits before removing an old branch. Update default branches, PR targets, badges, edit links, explicit `dev-main` consumers, deployment rules and agent-skill configuration. Laravel Boost-managed third-party skills are re-discovered and synchronized with `php artisan boost:update`. Preserve all published tags. Do not delete the old branch until these checks are complete.
 
 ## Shared workflow versions
 

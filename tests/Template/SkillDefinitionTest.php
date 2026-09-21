@@ -11,7 +11,7 @@ final class SkillDefinitionTest extends TestCase
     public function test_developing_filament_packages_skill_matches_standard_contract(): void
     {
         $root = dirname(__DIR__, 2);
-        $path = $root.'/skills/developing-filament-packages/SKILL.md';
+        $path = $root.'/resources/boost/skills/developing-filament-packages/SKILL.md';
 
         self::assertFileExists($path);
 
@@ -27,6 +27,8 @@ final class SkillDefinitionTest extends TestCase
         self::assertStringContainsString('Security 100', $content);
         self::assertStringContainsString('Composite 100', $content);
         self::assertStringContainsString('main', $content);
+        self::assertStringContainsString('Laravel Boost', $content);
+        self::assertStringContainsString('resources/boost/skills', $content);
         self::assertStringContainsString('*.x', $content);
 
         $words = preg_split('/\s+/', trim(strip_tags($content)));
@@ -38,7 +40,7 @@ final class SkillDefinitionTest extends TestCase
             'references/api-review.md',
             'references/release-checklist.md',
         ] as $relative) {
-            self::assertFileExists($root.'/skills/developing-filament-packages/'.$relative);
+            self::assertFileExists($root.'/resources/boost/skills/developing-filament-packages/'.$relative);
         }
     }
 }

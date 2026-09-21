@@ -14,7 +14,7 @@ A package without JavaScript does not need Playwright. A package without migrati
 
 Required: `.github/ISSUE_TEMPLATE/`, `.github/workflows/`, `docs/roadmap.md`, `docs-site/`, `src/`, `tests/`, `AGENTS.md`, `CONTRIBUTING.md`, `LICENSE.md`, `README.md`, `SECURITY.md`, `composer.json`, and `phpunit.xml.dist`.
 
-Add config, migrations, resources, workbench, root Node tooling, Playwright and other integrations only where appropriate. Current packages also provide `docs/development-flow.md` and separate docs-validation and release-publication workflows.
+Add config, migrations, resources, workbench, root Node tooling, Playwright and other integrations only where appropriate. Current packages also provide `docs/development-flow.md` and separate docs-validation and release-publication workflows. Consumer-facing Laravel Boost skills are optional and belong under `resources/boost/skills/<skill-name>/` when they materially improve correct package usage.
 
 ## Branching and versioning
 
@@ -88,8 +88,10 @@ A code change, a successful PR check, a tag and a live publication are separate 
 
 ## Template and agent tooling
 
-The template owns the repository skeleton, issue/PR forms, docs branding, reusable workflows, objective standard checks, release policy and the installable `developing-filament-packages` skill. Mechanical rules belong in tested checks; the skill explains workflow and judgment.
+The template owns the repository skeleton, issue/PR forms, docs branding, reusable workflows, objective standard checks, release policy and the maintainer `developing-filament-packages` skill. Mechanical rules belong in tested checks; the skill explains workflow and judgment.
 
-Install with `bash skills/developing-filament-packages/install.sh ~/.agents/skills` or the Claude-compatible `~/.claude/skills`. Use `--force` only for a deliberate update. Updating the repository does not update installed copies automatically.
+The canonical skill uses Laravel Boost's third-party package convention at `resources/boost/skills/developing-filament-packages/`. When the template package is installed as a **direct** dependency in a Laravel project configured for Boost skills, `php artisan boost:update` can discover it and sync it to the selected skills-capable agents. Do not maintain a parallel custom installer.
+
+The initializer removes this maintainer skill from generated public packages. Packages may expose their own consumer-facing skill under `resources/boost/skills/<skill-name>/` when doing so helps users configure or extend that package correctly. Such a skill must describe package usage, not MortalKiller's internal maintainer workflow. Do not rely on transitive dependencies for Boost discovery.
 
 The maintainer selected runtime/model-independent static skill validation and empirical refinement, rather than synthetic fresh-agent testing as a Standard v1 release gate. Keep behavioral scenarios for later regression testing when a suitable harness is available.

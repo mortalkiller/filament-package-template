@@ -164,7 +164,7 @@ This repository follows MortalKiller Filament Package Standard v1.
 
 Canonical standard: https://github.com/mortalkiller/filament-package-template/blob/1.x/docs/package-standard.md
 
-Read `docs/development-flow.md` and use the `developing-filament-packages` skill when installed. Work on temporary branches targeting the affected major. Publish immutable tags on verified major commits; do not introduce a stable-promotion branch.
+Read `docs/development-flow.md` and the canonical standard. When the `developing-filament-packages` skill is available in your configured agent, use it. Work on temporary branches targeting the affected major. Publish immutable tags on verified major commits; do not introduce a stable-promotion branch.
 
 Before completion, run required CI-equivalent checks and audit public content for private customer, consumer, infrastructure and credential information. Distinguish code/build verification from an actual release or live documentation deployment.
 MARKDOWN;
@@ -211,7 +211,7 @@ $removeTree = static function (string $path) use (&$removeTree): void {
     }
 };
 
-$templateOnly = ['tools', 'skills', 'tests/Template', 'tests/standard-checker', 'docs/package-standard.md', 'docs/verification.md'];
+$templateOnly = ['tools', 'resources/boost/skills/developing-filament-packages', 'tests/Template', 'tests/standard-checker', 'docs/package-standard.md', 'docs/verification.md'];
 foreach (['tests', 'quality', 'docs', 'docs-release', 'browser-tests', 'standard-check'] as $workflow) {
     $templateOnly[] = '.github/workflows/reusable-'.$workflow.'.yml';
 }

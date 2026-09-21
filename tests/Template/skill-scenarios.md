@@ -1,6 +1,6 @@
 # developing-filament-packages behavioral scenarios
 
-These scenarios must be run in fresh agent contexts before the skill is authored, then repeated with the skill installed.
+These scenarios are retained for future empirical regression testing in fresh agent contexts. Compare behavior without the skill against behavior after Laravel Boost (or the runtime under test) has synchronized the skill.
 
 ## Scenario 1 — New package
 

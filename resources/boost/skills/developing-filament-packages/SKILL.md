@@ -35,7 +35,7 @@ Run CI-equivalent checks and test every declared compatibility boundary. Include
 
 **REQUIRED REFERENCE:** Read `references/release-checklist.md` before preparing or publishing a release.
 
-Inspect the previous tag on the same major → exact release-commit diff. After review and successful exact-commit CI, create a new `vX.Y.Z` tag on `X.x` and publish its GitHub Release. Do not move tags or merge between permanent branches just to release. Keep the default branch on the newest stable major; change it only when the next major is stable.
+Inspect the previous tag on the same major → exact release-commit diff. After review and successful exact-commit CI, create a new `vX.Y.Z` tag on `X.x` and publish its GitHub Release. Do not move or recreate a published tag. Keep the default branch on the newest stable major; change it only when the next major is stable.
 
 Do not claim release completion without the applicable checks, public docs verification and fresh PlumbPHP evidence:
 
@@ -44,4 +44,10 @@ Do not claim release completion without the applicable checks, public docs verif
 - Security 100
 - Composite 100
 
-Never weaken security, compatibility, tests or architecture to satisfy a scanner. Distinguish stale scans and unexecuted live publication from verified results. Update installed skill copies after changing the canonical skill.
+Never weaken security, compatibility, tests or architecture to satisfy a scanner. Distinguish stale scans and unexecuted live publication from verified results.
+
+## Laravel Boost distribution
+
+This maintainer skill is published from `resources/boost/skills/developing-filament-packages`, the Laravel Boost third-party skill convention. When this template package is a direct dependency, `php artisan boost:update` can discover and sync it to configured skills-capable agents.
+
+Generated public packages must not expose this maintainer skill. A package may instead provide its own consumer-facing skill under `resources/boost/skills/<skill-name>/` when that improves correct package usage. Do not rely on transitive dependency discovery.
