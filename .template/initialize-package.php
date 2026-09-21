@@ -73,6 +73,11 @@ $replace = [
     TEMPLATE_NAMESPACE => $namespace,
     TEMPLATE_STEM => $stem,
     TEMPLATE_DESCRIPTION => $description,
+    './.github/workflows/reusable-tests.yml' => 'mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@1.x',
+    './.github/workflows/reusable-quality.yml' => 'mortalkiller/filament-package-template/.github/workflows/reusable-quality.yml@1.x',
+    './.github/workflows/reusable-docs.yml' => 'mortalkiller/filament-package-template/.github/workflows/reusable-docs.yml@1.x',
+    './.github/workflows/reusable-browser-tests.yml' => 'mortalkiller/filament-package-template/.github/workflows/reusable-browser-tests.yml@1.x',
+    './.github/workflows/reusable-standard-check.yml' => 'mortalkiller/filament-package-template/.github/workflows/reusable-standard-check.yml@1.x',
 ];
 
 $skipDirectories = ['.git', 'vendor', 'node_modules', 'dist', '.superpowers'];
