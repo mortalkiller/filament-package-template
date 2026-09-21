@@ -27,7 +27,7 @@ final class PublicContentCheck
     private const ROOT_FILES = ['README.md', 'CONTRIBUTING.md', 'SECURITY.md'];
 
     /** @var list<string> */
-    private const DIRECTORIES = ['docs', 'docs-site/src', '.github'];
+    private const DIRECTORIES = ['docs', 'docs-site/src', 'docs-site/public', '.github'];
 
     public function run(string $root, CheckResult $result): void
     {
