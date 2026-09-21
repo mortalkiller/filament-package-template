@@ -10,7 +10,7 @@ if (! is_file($checker)) {
     exit(1);
 }
 
-$makeFixture = static function (string $slug, array $options = []) use ($root): string {
+$makeFixture = static function (string $slug, array $options = []): string {
     $tmp = sys_get_temp_dir().'/standard-check-'.bin2hex(random_bytes(4));
     mkdir($tmp, 0777, true);
 
@@ -53,8 +53,8 @@ $makeFixture = static function (string $slug, array $options = []) use ($root): 
     $write('.github/workflows/quality.yml', "name: quality\n");
     $write('.github/workflows/docs.yml', "name: docs\n");
     $write('.github/workflows/standard.yml', "name: standard\n");
-    $write('src/.gitkeep', "");
-    $write('tests/.gitkeep', "");
+    $write('src/.gitkeep', '');
+    $write('tests/.gitkeep', '');
 
     if (($options['git'] ?? true) === true) {
         $write('.gitattributes', "/.github export-ignore\n/tests export-ignore\ncomposer.lock export-ignore\n");
