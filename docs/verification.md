@@ -83,7 +83,7 @@ Verified after the initializer recovery and checker-hardening work:
 
 The package initializer now also verifies safe resume after an interrupted initialization when the same persisted arguments are used, rejects mismatched resume arguments, and still rejects a second run after successful initialization.
 
-The public-content checker tests generic `/opt/...` host paths, literal SSH infrastructure commands, text assets under `docs-site/public/`, configured secret markers, safe fictional/local examples, and Git worktree distribution behavior.
+The public-content checker tests generic host-only filesystem paths, literal SSH infrastructure commands, text assets under `docs-site/public/`, configured secret markers, safe fictional/local examples, and Git worktree distribution behavior.
 
 ## Agent skill status
 
