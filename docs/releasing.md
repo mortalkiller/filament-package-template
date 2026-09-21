@@ -20,7 +20,9 @@ Record the scan time and ref; a stale scan does not prove a new commit passed. R
 
 ## Tags and publication
 
-Create a new immutable `vX.Y.Z` tag on the verified commit in `X.x`, then publish the GitHub Release. PATCH is a compatible fix, MINOR is compatible functionality, and MAJOR requires an incompatible-change review and migration guide. Do not move published tags. Clearly mark RC/beta releases as prereleases.
+Create a new immutable `vX.Y.Z` tag on the verified commit in `X.x`, then publish the GitHub Release. PATCH is a compatible fix, MINOR is compatible functionality, and MAJOR requires an incompatible-change review and migration guide. Do not move, delete and recreate, or reuse published version tags. Clearly mark RC/beta releases as prereleases.
+
+Packagist versions are immutable once observed. If a published version is wrong, do not retag the same version to another commit: withdraw/soft-delete it when appropriate, correct the code, and publish a new semantic version.
 
 The Release documentation workflow uses the exact tag, checks major ancestry and successful exact-commit push CI, then publishes the major channel through `docs-production`. Only the highest stable semantic version can update Latest; old-major patches, prereleases and stale reruns must not overwrite newer docs. Other version directories are preserved.
 

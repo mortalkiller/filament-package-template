@@ -9,7 +9,7 @@
 - [ ] Audit public content for private customers, infrastructure and secrets.
 - [ ] Prepare evidence-based release notes and any required upgrade instructions.
 - [ ] Verify the current PlumbPHP scan and all four 100 scores; record the scanned ref and disclose stale/unavailable results.
-- [ ] Create a new immutable `vX.Y.Z` tag on a verified commit belonging to `X.x`, then publish the GitHub Release. Do not move tags.
+- [ ] Create a new immutable `vX.Y.Z` tag on a verified commit belonging to `X.x`, then publish the GitHub Release. Do not move, delete and recreate, or reuse a published version tag.
 - [ ] Mark RC/beta releases as prereleases; never promote them to stable documentation.
 - [ ] Verify the release-documentation workflow: source equals the tag, exact-commit CI passed, and major/Latest channels cannot regress.
 - [ ] Confirm `docs-production` allows release tags, and `DOCS_REMOTE_PATH` identifies only this package.
@@ -18,5 +18,7 @@
 - [ ] Record the published release on relevant issues and update installed agent skills when tooling changed.
 
 If publication needs a re-run, use Release documentation with the existing tag; dry-run defaults to true. A tag predating the migration must not be moved or silently rebuilt using newer branch source. Publish a new release containing the configuration.
+
+Packagist versions are immutable once observed. If Packagist has seen a tag, deleting and recreating that tag on another commit will not replace the published version and can trigger an immutability error. Withdraw/soft-delete the bad release when appropriate, restore the original tag reference if needed for consistency, fix the code, and publish a new PATCH/MINOR/MAJOR version.
 
 A release is not complete merely because CI is green. Resolve legitimate Plumb findings without weakening security or compatibility; distinguish successful code validation from an unexecuted live deployment.
