@@ -29,6 +29,7 @@ jobs:
       - run: composer install --no-interaction --prefer-dist --no-progress
       - run: composer check
       - run: php tests/Template/repository-files.php
+      - run: php tests/standard-checker/run.php
       - name: Install documentation dependencies
         working-directory: docs-site
         run: npm install --no-audit --no-fund
