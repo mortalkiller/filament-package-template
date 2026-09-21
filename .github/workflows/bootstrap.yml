@@ -22,11 +22,16 @@ jobs:
           extensions: intl, mbstring, pdo_sqlite, dom, fileinfo, curl, zip
           coverage: none
           tools: composer:v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.20.0'
       - run: composer validate --strict
       - run: composer install --no-interaction --prefer-dist --no-progress
-      - name: Show repository-files Pint diff
-        run: |
-          vendor/bin/pint tests/Template/repository-files.php
-          git diff -- tests/Template/repository-files.php
-          git diff --exit-code -- tests/Template/repository-files.php
       - run: composer check
+      - run: php tests/Template/repository-files.php
+      - name: Install documentation dependencies
+        working-directory: docs-site
+        run: npm install --no-audit --no-fund
+      - name: Build documentation
+        working-directory: docs-site
+        run: npm run build
