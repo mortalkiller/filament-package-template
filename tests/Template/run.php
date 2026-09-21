@@ -22,6 +22,7 @@ $copy = static function (string $source, string $target) use (&$copy): void {
             }
             $copy($source.'/'.$entry, $target.'/'.$entry);
         }
+
         return;
     }
     @mkdir(dirname($target), 0777, true);
