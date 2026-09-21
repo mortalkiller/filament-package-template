@@ -30,6 +30,7 @@ jobs:
       - run: composer check
       - run: php tests/Template/repository-files.php
       - run: php tests/standard-checker/run.php
+      - run: php tools/package-standard-check.php --skip-plumb "$GITHUB_WORKSPACE"
       - name: Install documentation dependencies
         working-directory: docs-site
         run: npm install --no-audit --no-fund
