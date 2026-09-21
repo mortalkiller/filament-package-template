@@ -31,12 +31,6 @@ $copy = static function (string $source, string $target) use (&$copy): void {
 
 $copy($repo, $tmp);
 
-@mkdir($tmp.'/docs-site', 0777, true);
-file_put_contents(
-    $tmp.'/docs-site/astro.config.mjs',
-    "const repositoryUrl = 'https://github.com/mortalkiller/filament-package-template';\nconst basePath = '/filament-package-template';\n",
-);
-
 @mkdir($tmp.'/.github/workflows', 0777, true);
 file_put_contents(
     $tmp.'/.github/workflows/tests.yml',
@@ -71,6 +65,8 @@ $assertContains = static function (string $needle, string $path) use ($tmp): voi
 $assertContains('"name": "mortalkiller/filament-example"', 'composer.json');
 $assertContains('MortalKiller\\\\FilamentExample\\\\', 'composer.json');
 $assertContains("basePath = '/filament-example'", 'docs-site/astro.config.mjs');
+$assertContains("title: 'Filament Example'", 'docs-site/astro.config.mjs');
+$assertContains("description: 'Example Filament package.'", 'docs-site/astro.config.mjs');
 $assertContains('https://docs.pedromonteiro.dev/filament-example/', 'README.md');
 $assertContains(
     'uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@1.x',
@@ -80,6 +76,18 @@ $assertContains(
 if (! is_file($tmp.'/src/FilamentExampleServiceProvider.php')) {
     fwrite(STDERR, "Renamed service provider missing\n");
     exit(4);
+}
+
+$composer = json_decode((string) file_get_contents($tmp.'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
+if (in_array('package-template', $composer['keywords'] ?? [], true)) {
+    fwrite(STDERR, "Template-only Composer keyword leaked into generated package\n");
+    exit(41);
+}
+
+$security = (string) file_get_contents($tmp.'/SECURITY.md');
+if (str_contains($security, 'This template does not itself publish a runtime package')) {
+    fwrite(STDERR, "Template-specific security copy leaked into generated package\n");
+    exit(42);
 }
 
 foreach (['.template', 'tools', 'skills', 'tests/Template', 'tests/standard-checker'] as $removed) {
