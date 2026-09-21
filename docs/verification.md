@@ -87,21 +87,51 @@ The public-content checker tests generic host-only filesystem paths, literal SSH
 
 ## Agent skill status
 
-The behavioral RED scenarios for `developing-filament-packages` are stored under:
+The `developing-filament-packages` skill is now authored directly from the approved Standard v1.
+
+Verified runtime package:
+
+```text
+skills/developing-filament-packages/
+├── SKILL.md
+├── README.md
+├── install.sh
+└── references/
+    ├── api-review.md
+    ├── release-checklist.md
+    └── standard-summary.md
+```
+
+Static verification covers:
+
+- required Agent Skills frontmatter and trigger description;
+- main skill size capped at 500 words;
+- Standard v1 source-of-truth reference;
+- branch conventions;
+- PlumbPHP Ecosystem/Maintenance/Security/Composite 100 gates;
+- required API/release/standard reference files.
+
+Installer verification covers:
+
+- normal install into an arbitrary skills directory;
+- installation of `SKILL.md` plus all runtime references;
+- refusal to overwrite an existing installation by default;
+- deliberate replacement only through `--force`.
+
+Verified in the package-test matrix on commit `c36ade5b5a32644db4f60e5f982126fdf63d9358`:
+
+- PHP 8.3 / exact minimum Filament boundary — success;
+- PHP 8.5 / latest allowed Filament boundary — success.
+
+The maintainer explicitly approved skipping synthetic fresh-agent RED/GREEN runs because results vary materially by model and runtime. This is recorded as a project decision rather than fabricated evidence.
+
+The committed behavioral scenarios remain under:
 
 ```text
 skills/developing-filament-packages/tests/
 ```
 
-The current ChatGPT harness does not expose fresh-agent/subagent dispatch. The required baseline responses have therefore **not** been fabricated and `SKILL.md` has intentionally not been authored yet.
-
-Standard v1 must not be declared operational until:
-
-1. all baseline scenarios are executed in fresh contexts without the skill;
-2. observed failures are recorded;
-3. the minimal skill is authored from those failures;
-4. the same scenarios pass in fresh contexts with the skill installed;
-5. the skill installer is verified.
+They are retained for future regression testing when a suitable multi-agent harness is available. Standard v1 instead treats real package use as the empirical feedback loop for future Skill refinements.
 
 ## Pending repository state
 
