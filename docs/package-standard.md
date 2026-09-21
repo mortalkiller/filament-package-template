@@ -309,3 +309,22 @@ It owns:
 - the installable `developing-filament-packages` skill.
 
 The skill teaches workflow and judgment; this standard and the template remain the structural source of truth.
+
+
+## Installing the agent skill
+
+Install the cross-runtime skill from this repository:
+
+```bash
+bash skills/developing-filament-packages/install.sh ~/.agents/skills
+```
+
+Claude Code-compatible location:
+
+```bash
+bash skills/developing-filament-packages/install.sh ~/.claude/skills
+```
+
+Use `--force` only when deliberately replacing an existing installation.
+
+Synthetic fresh-agent RED/GREEN testing is not a Standard v1 release gate. The maintainer explicitly chose runtime/model-independent static validation plus empirical refinement during real package work. The committed behavioral scenarios remain available for future regression testing when a suitable multi-agent harness exists.
