@@ -6,6 +6,4 @@ namespace MortalKiller\FilamentPackageTemplate;
 
 use Illuminate\Support\ServiceProvider;
 
-final class FilamentPackageTemplateServiceProvider extends ServiceProvider
-{
-}
+final class FilamentPackageTemplateServiceProvider extends ServiceProvider {}
