@@ -45,6 +45,7 @@ The Skill is therefore validated by:
 
 - static contract tests;
 - installer tests;
-- repository CI;*- empirical refinement during real package work.
+- repository CI;
+- empirical refinement during real package work.
 
 The existing behavioral scenarios remain under `tests/scenarios.md` for future regression testing when a suitable multi-agent harness is available.
