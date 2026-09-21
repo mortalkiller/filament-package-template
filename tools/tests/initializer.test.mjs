@@ -38,7 +38,7 @@ test('new packages pin both external workflows and tooling to the requested SHA'
       assert.ok(!content.includes('${{ github.sha }}'));
     }
     assert.ok(!existsSync(join(root, '.github/workflows/reusable-docs-release.yml')));
-    assert.ok(readFileSync(join(root, 'AGENTS.md'), 'utf8').includes('mortalkiller/filament-package-template/blob/1.x/docs/package-standard.md'));
+    assert.ok(readFileSync(join(root, 'AGENTS.md'), 'utf8').includes('mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md'));
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 test('invalid workflow references are rejected before persistent changes', () => {
