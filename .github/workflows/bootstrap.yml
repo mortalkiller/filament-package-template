@@ -27,11 +27,6 @@ jobs:
           node-version: '22.20.0'
       - run: composer validate --strict
       - run: composer install --no-interaction --prefer-dist --no-progress
-      - name: Show checker Pint diff
-        run: |
-          vendor/bin/pint tests/standard-checker/run.php tools/package-standard-check.php tools/src/Checks/DistributionCheck.php
-          git diff -- tests/standard-checker/run.php tools/package-standard-check.php tools/src/Checks/DistributionCheck.php
-          git diff --exit-code -- tests/standard-checker/run.php tools/package-standard-check.php tools/src/Checks/DistributionCheck.php
       - run: composer check
       - run: php tests/Template/repository-files.php
       - run: php tests/standard-checker/run.php
