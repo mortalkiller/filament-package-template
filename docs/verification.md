@@ -67,6 +67,24 @@ The following cross-repository behavior still requires the planned package pilot
 - `docs-production` environment secrets resolving correctly inside a cross-repository reusable documentation workflow;
 - browser workflow parity on `filament-page-header`.
 
+## Current compatibility and quality boundaries
+
+Verified after the initializer recovery and checker-hardening work:
+
+- Package tests: https://github.com/mortalkiller/filament-package-template/actions/runs/35634685752 — success.
+  - PHP 8.3 / Testbench ^11.0 / Filament 5.8.1 exact minimum — success.
+  - PHP 8.5 / Testbench ^11.0 / latest resolved Filament ^5.8.1 — success.
+- Code quality: https://github.com/mortalkiller/filament-package-template/actions/runs/35634685761 — success.
+  - Pint — success.
+  - PHPStan over `src/` and `tools/` — success.
+  - tracked PHP/JavaScript syntax — success.
+- Documentation: https://github.com/mortalkiller/filament-package-template/actions/runs/35634685717 — build success; PR deploy correctly skipped.
+- Package standard: https://github.com/mortalkiller/filament-package-template/actions/runs/35634685763 — success.
+
+The package initializer now also verifies safe resume after an interrupted initialization when the same persisted arguments are used, rejects mismatched resume arguments, and still rejects a second run after successful initialization.
+
+The public-content checker tests generic `/opt/...` host paths, literal SSH infrastructure commands, text assets under `docs-site/public/`, configured secret markers, safe fictional/local examples, and Git worktree distribution behavior.
+
 ## Agent skill status
 
 The behavioral RED scenarios for `developing-filament-packages` are stored under:
