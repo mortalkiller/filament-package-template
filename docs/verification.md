@@ -57,15 +57,61 @@ Fixture coverage includes:
 
 The template repository uses `--skip-plumb` because it is infrastructure rather than a published Filament package. Maintained public packages do not skip the Plumb badge check.
 
-## Reusable workflow limits still requiring pilot verification
+## Cross-repository pilot verification
 
-The pull-request runs prove local reusable workflow syntax and behavior inside the template repository.
+The reusable workflows are now verified from real consumer repositories against `mortalkiller/filament-package-template@1.x`.
 
-The following cross-repository behavior still requires the planned package pilots after Standard v1 is merged and the `1.x` support line exists:
+### filament-complete-user-profile
 
-- consumer checkout of `mortalkiller/filament-package-template@1.x`;
-- `docs-production` environment secrets resolving correctly inside a cross-repository reusable documentation workflow;
-- browser workflow parity on `filament-page-header`.
+Stable `main` push evidence:
+
+- Package tests: https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643432097 — success.
+- Code quality: https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643432079 — success.
+- Package standard: https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643432090 — success.
+- Documentation: https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643432121 — success.
+
+The documentation run proves the cross-repository deployment design:
+
+- reusable workflow resolved from the Standard v1 repository;
+- the consumer repository's `docs-production` environment was applied;
+- environment secrets resolved successfully;
+- SSH configuration succeeded;
+- production `rsync` deployment succeeded.
+
+PlumbPHP verification run:
+
+- https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643716613
+- Ecosystem 100;
+- Maintenance 100;
+- Security 100;
+- Composite 100.
+
+### filament-page-header
+
+Active `2.x` Standard v1 verification:
+
+- Package tests: https://github.com/mortalkiller/filament-page-header/actions/runs/35645305814 — success.
+- Code quality: https://github.com/mortalkiller/filament-page-header/actions/runs/35645305495 — success.
+- Package standard: https://github.com/mortalkiller/filament-page-header/actions/runs/35645305865 — success.
+- Documentation: https://github.com/mortalkiller/filament-page-header/actions/runs/35645305375 — success.
+
+The package-test run includes:
+
+- Filament 4.12.6 exact minimum;
+- Filament 5.8.1 exact minimum;
+- latest supported Filament 4/5 combinations through PHP 8.5;
+- JavaScript unit tests;
+- Playwright Chromium on Filament 4.12.6;
+- Playwright Chromium on latest resolved Filament `^5.8.1`.
+
+Stable `main` verification after synchronizing published v2.3.1 and applying Standard v1 infrastructure:
+
+- Package tests: https://github.com/mortalkiller/filament-page-header/actions/runs/35647818493 — success.
+- Code quality: https://github.com/mortalkiller/filament-page-header/actions/runs/35647818496 — success.
+- Package standard: https://github.com/mortalkiller/filament-page-header/actions/runs/35647818424 — success.
+- Documentation: https://github.com/mortalkiller/filament-page-header/actions/runs/35647818418 — success, including production docs deployment.
+
+Current PlumbPHP stable-release scan still references v2.3.1 and therefore evaluates the pre-Standard docs workflow. Its current scores are Ecosystem 100, Maintenance 100, Security 78.38 and Composite 88.11. The only non-passing security check is `security.actions-sha-pinned`, with evidence pointing to four `@v4` references in the v2.3.1 docs workflow. Current `main` and `2.x` use the Standard v1 reusable docs workflow with SHA-pinned actions. A new stable patch release is required for Plumb to evaluate that corrected stable state.
 
 ## Current compatibility and quality boundaries
 
@@ -135,17 +181,13 @@ They are retained for future regression testing when a suitable multi-agent harn
 
 ## Pending repository state
 
-Before Standard v1 is operational:
+The implementation and cross-repository pilots are complete. Remaining work requires repository settings or release actions not exposed by the connected GitHub tooling:
 
-- complete the agent-skill RED/GREEN cycle;
-- merge PR #2 after all acceptance criteria are satisfied;
-- create `1.x` from the verified stable `main` state;
-- enable the repository as a GitHub Template Repository;
-- configure branch protections;
-- run cross-repository pilots;
-- adopt the standard in the existing package repositories;
-- record PlumbPHP 100 evidence for maintained public package releases.
-
+- enable `mortalkiller/filament-package-template` as a GitHub Template Repository;
+- configure/review branch protection or rulesets for `main` and maintained `*.x` branches;
+- set `main` as the default branch for the existing package repositories;
+- publish a new stable `filament-page-header` patch release from the current stable `main` state so PlumbPHP can evaluate the SHA-pinned workflow state;
+- confirm the resulting `filament-page-header` PlumbPHP Security and Composite scores reach 100.
 
 ## Final pre-merge verification
 
