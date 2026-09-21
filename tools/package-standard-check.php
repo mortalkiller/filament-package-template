@@ -58,7 +58,7 @@ if ($resolved === false || ! is_dir($resolved)) {
     exit(2);
 }
 
-$result = new CheckResult();
+$result = new CheckResult;
 
 (new RequiredFilesCheck)->run($resolved, $result);
 $identity = (new ComposerMetadataCheck)->run($resolved, $result);
