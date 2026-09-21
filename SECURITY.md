@@ -2,9 +2,9 @@
 
 ## Supported versions
 
-This template does not itself publish a runtime package. Packages created from it must replace this section with their supported package lines before the first stable release.
+Before the first stable release, security fixes are maintained on the package's current development line.
 
-Use the latest patch release in any supported line.
+After a stable major is released, list the supported package lines here explicitly and use the latest available patch release for each supported line.
 
 ## Reporting a vulnerability
 
@@ -27,4 +27,4 @@ Reports are reviewed on a best-effort basis. Confirmed vulnerabilities should be
 
 ## Package boundary
 
-The consuming application remains responsible for its application-level authentication, authorization, data access, tenant resolution, deployment security, and any application-specific trust boundaries not explicitly owned by the package.
+The consuming application remains responsible for application-level authentication, authorization, data access, tenant resolution, deployment security, and any application-specific trust boundaries not explicitly owned by the package.

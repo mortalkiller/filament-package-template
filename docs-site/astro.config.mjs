@@ -11,7 +11,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Filament Package Template',
-      description: 'Standard documentation skeleton for MortalKiller Filament packages.',
+      description: 'Template for MortalKiller Filament packages.',
       favicon: `${basePath}/favicon-32x32.png`,
       head: [
         { tag: 'link', attrs: { rel: 'icon', href: `${basePath}/favicon.ico`, sizes: 'any' } },

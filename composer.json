@@ -3,7 +3,10 @@
   "name": "mortalkiller/filament-package-template",
   "description": "Template for MortalKiller Filament packages.",
   "homepage": "https://github.com/mortalkiller/filament-package-template",
-  "keywords": ["filament", "laravel", "package-template"],
+  "keywords": [
+    "filament",
+    "laravel"
+  ],
   "type": "library",
   "license": "MIT",
   "support": {
