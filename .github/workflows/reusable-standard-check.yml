@@ -17,10 +17,11 @@ jobs:
           persist-credentials: false
 
       - name: Checkout MortalKiller package standard
+        if: ${{ github.repository != 'mortalkiller/filament-package-template' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: mortalkiller/filament-package-template
-          ref: ${{ github.repository == 'mortalkiller/filament-package-template' && github.ref_name || '1.x' }}
+          ref: 1.x
           persist-credentials: false
           path: .mortal-package-standard
 
@@ -28,7 +29,7 @@ jobs:
         shell: bash
         run: |
           if [[ "$GITHUB_REPOSITORY" == "mortalkiller/filament-package-template" ]]; then
-            php .mortal-package-standard/tools/package-standard-check.php --skip-plumb "$GITHUB_WORKSPACE"
+            php tools/package-standard-check.php --skip-plumb "$GITHUB_WORKSPACE"
           else
             php .mortal-package-standard/tools/package-standard-check.php "$GITHUB_WORKSPACE"
           fi
