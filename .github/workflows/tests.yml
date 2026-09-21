@@ -19,4 +19,4 @@ jobs:
     uses: ./.github/workflows/reusable-tests.yml
     with:
       matrix-json: >-
-        {"include":[{"php":"8.3","testbench":"^11.0","filament":"5.8.1"},{"php":"8.5","testbench":"^11.0","filament":"^5.8.1"}]}
+        {"include":[{"php":"8.3","testbench":"^11.0","filament":"5.8.1","dependencies":"lowest"},{"php":"8.5","testbench":"^11.0","filament":"^5.8.1","dependencies":"latest"}]}
