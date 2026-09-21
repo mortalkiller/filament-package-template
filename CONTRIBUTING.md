@@ -1,26 +1,11 @@
 # Contributing
 
-## Branches
+Read [Package Standard v1](docs/package-standard.md) and [Development and release flow](docs/development-flow.md).
 
-- `main` represents the latest stable public state.
-- `1.x`, `2.x`, `3.x`, and later `*.x` branches are major-version development/support lines.
-- Use focused temporary branches such as `feature/*`, `fix/*`, `docs/*`, `test/*`, `refactor/*`, or `chore/*`.
+Create a focused temporary branch from the affected package major (`1.x` for this template) and open a PR to that same major. The major-only flow has no separate stable-promotion branch. Use an issue and acceptance criteria for meaningful changes, preserve existing compatibility boundaries, and include tests and documentation. Squash temporary work after review and successful CI.
 
-For a brand-new package, create `1.x` from the initialized `main` baseline and perform first-major development on `1.x`. Keep production documentation deployment disabled until the first stable v1 state is merged to `main`.
+Run Composer validation, PHP tests, Pint, tracked syntax checks, the package-standard checker, the docs build, and `node --test tools/tests/*.test.mjs` for shared release tooling. Test the initializer and its partial-initialization safety. Do not publish secrets, private applications, customer data or infrastructure in examples or verification logs.
 
-## Local checks
+External reusable workflows and their supporting tools must be pinned to the same validated full commit SHA. Keep older consumer contracts compatible during a rollout. Releases use immutable `vX.Y.Z` tags from verified commits on `X.x`; publishing a stable GitHub Release, not pushing a branch, publishes documentation. Never move existing tags.
 
-```bash
-composer install
-composer check
-```
-
-If the package owns JavaScript or browser behavior, run the package-specific JavaScript/browser checks documented in its development guide.
-
-## Pull requests
-
-Keep pull requests focused. Meaningful public API or behavior changes should reference a GitHub issue with objective acceptance criteria. Update tests and documentation in the same work when they are part of the public behavior.
-
-Public API should remain Laravel/Filament-native-first, small, fluent, and backwards compatible inside a major.
-
-Do not publish credentials, customer information, private application names, internal URLs, production infrastructure, or private filesystem paths in code, tests, screenshots, issues, or documentation.
+Report vulnerabilities through GitHub private vulnerability reporting as described in [SECURITY.md](SECURITY.md).

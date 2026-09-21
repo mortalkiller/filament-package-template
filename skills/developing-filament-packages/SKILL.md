@@ -7,60 +7,41 @@ description: Use when creating, changing, documenting, testing, auditing, mainta
 
 ## Core principle
 
-Treat a public package as a maintained product, not just code. The canonical complete standard lives in `mortalkiller/filament-package-template` at `docs/package-standard.md`; use the bundled `references/standard-summary.md` for the runtime summary.
+Treat a public package as a maintained product. The canonical standard is `docs/package-standard.md` in `mortalkiller/filament-package-template`; read `references/standard-summary.md` for the runtime summary.
 
 ## Start here
 
-1. Identify the repository and version line. `main` is latest stable; `*.x` branches are major development/support lines.
-2. Read the relevant issue, source, tests, Composer constraints, README, docs, and roadmap before changing behavior.
-3. For meaningful work, use an issue with objective acceptance criteria and a focused temporary branch.
+1. Identify the repository and package major. Use the major-only flow: permanent `*.x` branches, temporary work branches, and immutable release tags. Do not recreate a separate `main` promotion branch.
+2. Read the issue, relevant source/tests, Composer constraints, README, docs and roadmap before changing behavior.
+3. Create a focused temporary branch from the affected major and target that major in the PR. Meaningful work needs an issue and objective acceptance criteria.
 
 ## API changes
 
-Use Laravel/Filament-native behavior first. Keep the public API small, fluent, predictable, and backwards compatible inside a major.
+Prefer native Laravel/Filament behavior and a small fluent, predictable API. Preserve backwards compatibility inside a major.
 
-**REQUIRED REFERENCE:** Read `references/api-review.md` before adding or changing public API.
+**REQUIRED REFERENCE:** Read `references/api-review.md` before adding or changing public API. Tests and source-derived documentation are part of the feature.
 
-Tests and documentation are part of the feature. Do not call implementation complete when only runtime code changed.
+## Documentation and privacy
 
-## Public documentation
+Derive API docs from source and tests, not old README assumptions. Use fictional examples; never publish private consumers, infrastructure, credentials, tokens, hosts, SSH details, real container names, paths or screenshots. Keep the roadmap future-only.
 
-Derive API docs from actual source and tests, not README assumptions.
-
-Use synthetic examples. Never publish customer/private application names, real infrastructure, credentials, tokens, internal hosts, SSH details, container names, or private filesystem paths.
-
-Keep the roadmap future-only: remove completed features instead of marking them as historical checklist items.
+PRs and pushes validate docs only. Stable releases publish the exact tag into its major channel, and update Latest only when semantically newest. Prereleases, old majors and stale reruns cannot replace newer stable documentation. Manual publication defaults to a dry run of an existing release.
 
 ## Verification
 
-Run the repository's CI-equivalent checks and verify every compatibility boundary declared in Composer. Add browser/JavaScript checks only when the package owns browser/JavaScript behavior.
-
-Use the central package-standard checker when available.
+Run CI-equivalent checks and test every declared compatibility boundary. Include browser/JavaScript tests only where relevant. Run the standard checker. External workflow calls and their tooling must share a validated full SHA; template branch updates are not adopted automatically.
 
 ## Releases
 
-Release notes come from the previous tag → release state, not memory.
-
 **REQUIRED REFERENCE:** Read `references/release-checklist.md` before preparing or publishing a release.
 
-Do not call an actively maintained public package release-ready until PlumbPHP reports:
+Inspect the previous tag on the same major → exact release-commit diff. After review and successful exact-commit CI, create a new `vX.Y.Z` tag on `X.x` and publish its GitHub Release. Do not move tags or merge between permanent branches just to release. Keep the default branch on the newest stable major; change it only when the next major is stable.
+
+Do not claim release completion without the applicable checks, public docs verification and fresh PlumbPHP evidence:
 
 - Ecosystem 100
 - Maintenance 100
 - Security 100
 - Composite 100
 
-Investigate legitimate scanner findings, but never weaken security, compatibility, tests, or architecture merely to satisfy a scanner.
-
-## Quick reference
-
-| Situation | Required action |
-|---|---|
-| New package | Start from the canonical template and Standard v1 |
-| Public API | Run the API review |
-| Meaningful feature/bug | Issue + acceptance criteria + tests + docs |
-| Public docs | Source audit + privacy audit |
-| Roadmap update | Keep future work only |
-| Release | Actual diff/history + release checklist + PlumbPHP 100 |
-
-For branch, repository, CI, docs, privacy, and maintenance conventions, read `references/standard-summary.md`.
+Never weaken security, compatibility, tests or architecture to satisfy a scanner. Distinguish stale scans and unexecuted live publication from verified results. Update installed skill copies after changing the canonical skill.

@@ -2,6 +2,11 @@ name: Reusable package standard check
 
 on:
   workflow_call:
+    inputs:
+      standard-ref:
+        description: 'Full SHA for the checker, pinned with the reusable workflow'
+        type: string
+        default: '90c3c6765c2fd918755497803dfc9b8a0302e7df'
 
 permissions:
   contents: read
@@ -15,21 +20,32 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-
+      - name: Verify the checker reference
+        env:
+          STANDARD_REF: ${{ inputs.standard-ref }}
+        run: '[[ "$STANDARD_REF" =~ ^[a-f0-9]{40}$ ]]'
       - name: Checkout MortalKiller package standard
         if: ${{ github.repository != 'mortalkiller/filament-package-template' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: mortalkiller/filament-package-template
-          ref: 1.x
+          ref: ${{ inputs.standard-ref }}
           persist-credentials: false
           path: .mortal-package-standard
-
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.20.0'
       - name: Run package standard checker
         shell: bash
         run: |
           if [[ "$GITHUB_REPOSITORY" == "mortalkiller/filament-package-template" ]]; then
             php tools/package-standard-check.php --skip-plumb "$GITHUB_WORKSPACE"
+            node tools/check-major-flow.mjs "$GITHUB_WORKSPACE"
+            node --test tools/tests/*.test.mjs
           else
             php .mortal-package-standard/tools/package-standard-check.php "$GITHUB_WORKSPACE"
+            if test -f .mortal-package-standard/tools/check-major-flow.mjs; then
+              node .mortal-package-standard/tools/check-major-flow.mjs "$GITHUB_WORKSPACE"
+            fi
           fi

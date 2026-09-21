@@ -3,9 +3,7 @@ name: Package standard
 on:
   pull_request:
   push:
-    branches:
-      - main
-      - '1.x'
+    branches: ['*.x']
   workflow_dispatch:
 
 permissions:
@@ -18,3 +16,5 @@ concurrency:
 jobs:
   standard:
     uses: ./.github/workflows/reusable-standard-check.yml
+    with:
+      standard-ref: ${{ github.sha }}

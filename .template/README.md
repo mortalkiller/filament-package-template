@@ -1,15 +1,9 @@
-# Initialize a new package
+# Initializing a new package
 
-After creating a repository from this GitHub template, run:
+Generate a repository from this template, start on `1.x`, and configure `1.x` as the default GitHub branch. Do not create a separate promotion branch.
 
-```bash
-php .template/initialize-package.php \
-    --slug=filament-example \
-    --title="Filament Example" \
-    --namespace='MortalKiller\FilamentExample' \
-    --description="Short package description."
-```
+Run `.template/initialize-package.php` with `--slug`, `--title`, `--namespace`, `--description` and `--workflow-ref`. The workflow reference is a reviewed full 40-character commit SHA from the canonical template. Use a commit containing all reusable workflows referenced by this template, including release documentation. Do not use the generated repository's unrelated initial commit as the template reference.
 
-The initializer updates package metadata, namespace, documentation URLs/base path, and service-provider naming. It then removes template-only infrastructure while retaining the thin reusable-workflow wrappers needed by the generated package.
+The initializer changes package identity, converts relative workflow calls into SHA-pinned calls, pins the checker/publication tools with `standard-ref`, and removes template-only tooling. It rejects invalid input and unsafe reinitialization, and can resume an interrupted initialization only when the original arguments match.
 
-The command is intentionally one-shot and refuses to initialize an already initialized repository.
+After initialization, run package CI and configure branch protection, release-tag/environment policies and deployment variables. Documentation remains unpublished until a stable release is explicitly published with deployment enabled. No secrets belong in this repository.
