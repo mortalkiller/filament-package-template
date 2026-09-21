@@ -34,8 +34,8 @@ $astroContent = (string) file_get_contents($astro);
 foreach ([
     "const basePath = '/filament-package-template'",
     "site: 'https://docs.pedromonteiro.dev'",
-    "https://github.com/mortalkiller/filament-package-template",
-    "https://pedromonteiro.dev",
+    'https://github.com/mortalkiller/filament-package-template',
+    'https://pedromonteiro.dev',
 ] as $needle) {
     if (! str_contains($astroContent, $needle)) {
         fwrite(STDERR, "Missing [{$needle}] in [docs-site/astro.config.mjs]\n");
