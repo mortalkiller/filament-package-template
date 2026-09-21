@@ -37,6 +37,13 @@ file_put_contents(
     "const repositoryUrl = 'https://github.com/mortalkiller/filament-package-template';\nconst basePath = '/filament-package-template';\n",
 );
 
+@mkdir($tmp.'/.github/workflows', 0777, true);
+file_put_contents(
+    $tmp.'/.github/workflows/tests.yml',
+    "jobs:\n  tests:\n    uses: ./.github/workflows/reusable-tests.yml\n",
+);
+file_put_contents($tmp.'/.github/workflows/reusable-tests.yml', "name: reusable\n");
+
 $cmd = sprintf(
     'PACKAGE_TEMPLATE_ROOT=%s php %s --slug=%s --title=%s --namespace=%s --description=%s 2>&1',
     escapeshellarg($tmp),
@@ -65,6 +72,10 @@ $assertContains('"name": "mortalkiller/filament-example"', 'composer.json');
 $assertContains('MortalKiller\\\\FilamentExample\\\\', 'composer.json');
 $assertContains("basePath = '/filament-example'", 'docs-site/astro.config.mjs');
 $assertContains('https://docs.pedromonteiro.dev/filament-example/', 'README.md');
+$assertContains(
+    'uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@1.x',
+    '.github/workflows/tests.yml',
+);
 
 if (! is_file($tmp.'/src/FilamentExampleServiceProvider.php')) {
     fwrite(STDERR, "Renamed service provider missing\n");
