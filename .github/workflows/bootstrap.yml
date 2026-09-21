@@ -24,9 +24,4 @@ jobs:
           tools: composer:v2
       - run: composer validate --strict
       - run: composer install --no-interaction --prefer-dist --no-progress
-      - name: Show Pint formatting diff
-        run: |
-          vendor/bin/pint tests/Template/run.php
-          git diff -- tests/Template/run.php
-          git diff --exit-code -- tests/Template/run.php
       - run: composer check
