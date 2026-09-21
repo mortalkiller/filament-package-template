@@ -26,7 +26,8 @@ final class DistributionCheck
 
     public function run(string $root, CheckResult $result): void
     {
-        if (! is_dir($root.'/.git')) {
+        [$gitCode, $gitOutput] = $this->runProcess(['git', '-C', $root, 'rev-parse', '--is-inside-work-tree']);
+        if ($gitCode !== 0 || trim($gitOutput) !== 'true') {
             $result->warn('distribution.git_unavailable', 'Distribution archive validation requires a Git repository.');
 
             return;
