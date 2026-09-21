@@ -7,7 +7,7 @@ description: Use when creating, changing, documenting, testing, auditing, mainta
 
 ## Core principle
 
-Treat a public package as a maintained product, not just code. The canonical rules live in `docs/package-standard.md`; this skill adds workflow and judgment.
+Treat a public package as a maintained product, not just code. The canonical complete standard lives in `mortalkiller/filament-package-template` at `docs/package-standard.md`; use the bundled `references/standard-summary.md` for the runtime summary.
 
 ## Start here
 
