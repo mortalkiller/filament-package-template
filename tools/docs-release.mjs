@@ -67,6 +67,10 @@ export function validateRemotePath(path, slug) {
   return normalized;
 }
 
+export function latestSyncArgs(transport, source, destination) {
+  return ['-acz', '--delete', '--exclude=[0-9]*.x/', '--exclude=versions.json', '-e', transport, source, destination];
+}
+
 export function requireSuccessfulChecks(runs, sha, major) {
   if (!/^[a-f0-9]{40}$/.test(sha)) throw new Error('Invalid release commit SHA.');
   for (const name of requiredWorkflows) {
@@ -166,10 +170,10 @@ async function publish() {
   if (!plan.publish) { console.log('A newer publication exists; refusing to downgrade documentation.'); return; }
   const transport = `ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -p ${port} -i ${key}`;
   remote(`mkdir -p -- '${root}/${plan.major}'`);
-  command('rsync', ['-az', '--delete', '-e', transport, '.docs-release/major/', `${target}:${root}/${plan.major}/`]);
+  command('rsync', ['-acz', '--delete', '-e', transport, '.docs-release/major/', `${target}:${root}/${plan.major}/`]);
   if (plan.latest) {
     // Root remains the canonical Latest URL; numeric major directories are protected from deletion.
-    command('rsync', ['-az', '--delete', '--exclude=[0-9]*.x/', '--exclude=versions.json', '-e', transport, '.docs-release/latest/', `${target}:${root}/`]);
+    command('rsync', latestSyncArgs(transport, '.docs-release/latest/', `${target}:${root}/`));
   }
   writeFileSync('.docs-release/versions.json', JSON.stringify(plan.manifest, null, 2) + '\n');
   command('rsync', ['-az', '-e', transport, '.docs-release/versions.json', `${target}:${root}/versions.json.tmp`]);

@@ -51,9 +51,25 @@ jobs:
 
       - name: Install documentation dependencies
         working-directory: ${{ inputs.docs-directory }}
-        run: npm install --no-audit --no-fund
+        run: |
+          if test -f package-lock.json; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
 
-      - name: Build documentation
+      - name: Validate a major-version documentation build
+        env:
+          DOCS_DIRECTORY: ${{ inputs.docs-directory }}
+        run: |
+          if grep -q 'DOCS_BASE_PATH' "$DOCS_DIRECTORY/astro.config.mjs"; then
+            slug="${GITHUB_REPOSITORY#*/}"
+            major="${GITHUB_BASE_REF:-$GITHUB_REF_NAME}"
+            if [[ ! "$major" =~ ^[0-9]+\.x$ ]]; then major='0.x'; fi
+            (cd "$DOCS_DIRECTORY" && DOCS_BASE_PATH="/$slug/$major" DOCS_MAJOR_BRANCH="$major" npm run build)
+          fi
+
+      - name: Build canonical documentation
         working-directory: ${{ inputs.docs-directory }}
         run: npm run build
 
