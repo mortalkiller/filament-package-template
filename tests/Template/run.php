@@ -4,23 +4,28 @@ declare(strict_types=1);
 
 $repo = dirname(__DIR__, 2);
 $initializer = $repo.'/.template/initialize-package.php';
-
-if (! is_file($initializer)) {
-    fwrite(STDERR, "RED: initializer missing\n");
+$workflowRef = str_repeat('a', 40);
+$state = [
+    'slug' => 'filament-example',
+    'title' => 'Filament Example',
+    'namespace' => 'MortalKiller\\FilamentExample',
+    'description' => 'Example Filament package.',
+    'workflow_ref' => $workflowRef,
+];
+$fail = static function (string $message): never {
+    fwrite(STDERR, $message.PHP_EOL);
     exit(1);
+};
+if (! is_file($initializer)) {
+    $fail('Initializer is missing.');
 }
-
-$tmp = sys_get_temp_dir().'/fpt-'.bin2hex(random_bytes(4));
-mkdir($tmp, 0777, true);
-
 $copy = static function (string $source, string $target) use (&$copy): void {
     if (is_dir($source)) {
         @mkdir($target, 0777, true);
         foreach (scandir($source) ?: [] as $entry) {
-            if (in_array($entry, ['.', '..', '.git', 'vendor', 'node_modules', '.superpowers'], true)) {
-                continue;
+            if (! in_array($entry, ['.', '..', '.git', 'vendor', 'node_modules', '.superpowers'], true)) {
+                $copy($source.'/'.$entry, $target.'/'.$entry);
             }
-            $copy($source.'/'.$entry, $target.'/'.$entry);
         }
 
         return;
@@ -28,144 +33,78 @@ $copy = static function (string $source, string $target) use (&$copy): void {
     @mkdir(dirname($target), 0777, true);
     copy($source, $target);
 };
+$fixture = static function () use ($repo, $copy): string {
+    $path = sys_get_temp_dir().'/fpt-'.bin2hex(random_bytes(4));
+    $copy($repo, $path);
 
-$copy($repo, $tmp);
+    return $path;
+};
+$run = static function (string $root, array $input) use ($initializer): array {
+    $args = [];
+    foreach ($input as $key => $value) {
+        $args[] = '--'.str_replace('_', '-', $key).'='.escapeshellarg($value);
+    }
+    $command = 'PACKAGE_TEMPLATE_ROOT='.escapeshellarg($root).' '.escapeshellarg(PHP_BINARY).' '.escapeshellarg($initializer).' '.implode(' ', $args).' 2>&1';
+    exec($command, $output, $code);
 
-@mkdir($tmp.'/.github/workflows', 0777, true);
-file_put_contents(
-    $tmp.'/.github/workflows/tests.yml',
-    "jobs:\n  tests:\n    uses: ./.github/workflows/reusable-tests.yml\n",
-);
-file_put_contents($tmp.'/.github/workflows/reusable-tests.yml', "name: reusable\n");
-
-$cmd = sprintf(
-    'PACKAGE_TEMPLATE_ROOT=%s php %s --slug=%s --title=%s --namespace=%s --description=%s 2>&1',
-    escapeshellarg($tmp),
-    escapeshellarg($initializer),
-    escapeshellarg('filament-example'),
-    escapeshellarg('Filament Example'),
-    escapeshellarg('MortalKiller\\FilamentExample'),
-    escapeshellarg('Example Filament package.'),
-);
-exec($cmd, $output, $code);
+    return [$code, implode("\n", $output)];
+};
+$tmp = $fixture();
+[$code, $output] = $run($tmp, $state);
 if ($code !== 0) {
-    fwrite(STDERR, implode("\n", $output)."\n");
-    exit(2);
+    $fail($output);
 }
-
-$assertContains = static function (string $needle, string $path) use ($tmp): void {
+$assertContains = static function (string $needle, string $path) use ($tmp, $fail): void {
     $full = $tmp.'/'.$path;
-    $content = is_file($full) ? file_get_contents($full) : false;
-    if (! is_string($content) || ! str_contains($content, $needle)) {
-        fwrite(STDERR, "Missing [{$needle}] in [{$path}]\n");
-        exit(3);
+    if (! is_file($full) || ! str_contains((string) file_get_contents($full), $needle)) {
+        $fail("Missing [{$needle}] in [{$path}]");
     }
 };
-
 $assertContains('"name": "mortalkiller/filament-example"', 'composer.json');
 $assertContains('MortalKiller\\\\FilamentExample\\\\', 'composer.json');
 $assertContains("basePath = '/filament-example'", 'docs-site/astro.config.mjs');
 $assertContains("title: 'Filament Example'", 'docs-site/astro.config.mjs');
 $assertContains("description: 'Example Filament package.'", 'docs-site/astro.config.mjs');
 $assertContains('https://docs.pedromonteiro.dev/filament-example/', 'README.md');
-$assertContains(
-    'uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@1.x',
-    '.github/workflows/tests.yml',
-);
-
+$assertContains('uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@'.$workflowRef, '.github/workflows/tests.yml');
+$assertContains('standard-ref: '.$workflowRef, '.github/workflows/standard.yml');
+$assertContains('standard-ref: '.$workflowRef, '.github/workflows/docs-release.yml');
+$assertContains('mortalkiller/filament-package-template/blob/1.x/docs/package-standard.md', 'AGENTS.md');
 if (! is_file($tmp.'/src/FilamentExampleServiceProvider.php')) {
-    fwrite(STDERR, "Renamed service provider missing\n");
-    exit(4);
+    $fail('Renamed service provider is missing.');
 }
-
 $composer = json_decode((string) file_get_contents($tmp.'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
 if (in_array('package-template', $composer['keywords'] ?? [], true)) {
-    fwrite(STDERR, "Template-only Composer keyword leaked into generated package\n");
-    exit(41);
+    $fail('Template-only Composer keyword leaked into the generated package.');
 }
-
-$security = (string) file_get_contents($tmp.'/SECURITY.md');
-if (str_contains($security, 'This template does not itself publish a runtime package')) {
-    fwrite(STDERR, "Template-specific security copy leaked into generated package\n");
-    exit(42);
+if (str_contains((string) file_get_contents($tmp.'/SECURITY.md'), 'This template does not itself publish a runtime package')) {
+    $fail('Template-specific security text leaked into the generated package.');
 }
-
-foreach (['.template', 'tools', 'skills', 'tests/Template', 'tests/standard-checker'] as $removed) {
+foreach (['.template', 'tools', 'skills', 'tests/Template', 'tests/standard-checker', '.github/workflows/reusable-docs-release.yml'] as $removed) {
     if (file_exists($tmp.'/'.$removed)) {
-        fwrite(STDERR, "Template-only path still exists: {$removed}\n");
-        exit(5);
+        $fail('Template-only path still exists: '.$removed);
     }
 }
-
-$second = [];
-$secondCode = 0;
-exec($cmd, $second, $secondCode);
-if ($secondCode === 0 || ! str_contains(implode("\n", $second), 'Package template has already been initialized.')) {
-    fwrite(STDERR, "Second initialization was not rejected safely\n");
-    exit(6);
+[$secondCode, $secondOutput] = $run($tmp, $state);
+if ($secondCode === 0 || ! str_contains($secondOutput, 'Package template has already been initialized.')) {
+    $fail('Repeated initialization was not rejected safely.');
 }
-
-$partial = sys_get_temp_dir().'/fpt-partial-'.bin2hex(random_bytes(4));
-mkdir($partial, 0777, true);
-$copy($repo, $partial);
-
-$partialComposer = (string) file_get_contents($partial.'/composer.json');
-$partialComposer = str_replace(
-    '"name": "mortalkiller/filament-package-template"',
-    '"name": "mortalkiller/filament-example"',
-    $partialComposer,
-);
-file_put_contents($partial.'/composer.json', $partialComposer);
-
-$state = [
-    'slug' => 'filament-example',
-    'title' => 'Filament Example',
-    'namespace' => 'MortalKiller\\FilamentExample',
-    'description' => 'Example Filament package.',
-];
-file_put_contents(
-    $partial.'/.template/.initializing.json',
-    json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n",
-);
-
-$partialCmd = sprintf(
-    'PACKAGE_TEMPLATE_ROOT=%s php %s --slug=%s --title=%s --namespace=%s --description=%s 2>&1',
-    escapeshellarg($partial),
-    escapeshellarg($initializer),
-    escapeshellarg($state['slug']),
-    escapeshellarg($state['title']),
-    escapeshellarg($state['namespace']),
-    escapeshellarg($state['description']),
-);
-exec($partialCmd, $partialOutput, $partialCode);
+$partial = $fixture();
+file_put_contents($partial.'/composer.json', str_replace('"name": "mortalkiller/filament-package-template"', '"name": "mortalkiller/filament-example"', (string) file_get_contents($partial.'/composer.json')));
+file_put_contents($partial.'/.template/.initializing.json', json_encode($state, JSON_THROW_ON_ERROR));
+[$partialCode, $partialOutput] = $run($partial, $state);
 if ($partialCode !== 0 || file_exists($partial.'/.template')) {
-    fwrite(STDERR, "Matching partial initialization did not resume safely:\n".implode("\n", $partialOutput)."\n");
-    exit(7);
+    $fail('Matching partial initialization did not resume safely: '.$partialOutput);
 }
-
-$mismatch = sys_get_temp_dir().'/fpt-mismatch-'.bin2hex(random_bytes(4));
-mkdir($mismatch, 0777, true);
-$copy($repo, $mismatch);
-file_put_contents(
-    $mismatch.'/.template/.initializing.json',
-    json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n",
-);
-$mismatchCmd = sprintf(
-    'PACKAGE_TEMPLATE_ROOT=%s php %s --slug=%s --title=%s --namespace=%s --description=%s 2>&1',
-    escapeshellarg($mismatch),
-    escapeshellarg($initializer),
-    escapeshellarg('filament-different'),
-    escapeshellarg($state['title']),
-    escapeshellarg($state['namespace']),
-    escapeshellarg($state['description']),
-);
-exec($mismatchCmd, $mismatchOutput, $mismatchCode);
-if (
-    $mismatchCode === 0
-    || ! str_contains(implode("\n", $mismatchOutput), 'Initialization is already in progress with different arguments.')
-) {
-    fwrite(STDERR, "Mismatched partial initialization was not rejected safely\n");
-    exit(8);
+$mismatch = $fixture();
+file_put_contents($mismatch.'/.template/.initializing.json', json_encode($state, JSON_THROW_ON_ERROR));
+[$mismatchCode, $mismatchOutput] = $run($mismatch, array_replace($state, ['slug' => 'filament-different']));
+if ($mismatchCode === 0 || ! str_contains($mismatchOutput, 'Initialization is already in progress with different arguments.')) {
+    $fail('Mismatched partial initialization was not rejected safely.');
+}
+[$refCode] = $run($mismatch, array_replace($state, ['workflow_ref' => '1.x']));
+if ($refCode === 0) {
+    $fail('Mutable workflow reference was accepted.');
 }
 
 echo "initializer smoke test passed\n";
