@@ -1,0 +1,9 @@
+<link rel="icon" href="/filament-package-template/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="96x96" href="/filament-package-template/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/filament-package-template/favicon-48x48.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/filament-package-template/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/filament-package-template/apple-touch-icon.png">
+<link rel="manifest" href="/filament-package-template/site.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="msapplication-TileColor" content="#000000">
+<meta name="msapplication-config" content="/filament-package-template/browserconfig.xml">
