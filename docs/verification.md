@@ -1,207 +1,82 @@
 # Verification record
 
-This file records verification evidence for MortalKiller Filament Package Standard v1 infrastructure.
+This record describes the major-only migration checked on 2026-09-21. Code integration, CI, repository administration, release publication and live documentation deployment are separate milestones. Passing CI is not evidence that a live release deployment has occurred.
 
-It intentionally contains no credentials, private application/customer information, production infrastructure values, or private repository data.
+The authoritative development and release rules are in [package-standard.md](package-standard.md), [development-flow.md](development-flow.md) and [releasing.md](releasing.md). Use permanent `N.x` branches and immutable release tags; do not restore the former promotion-branch model.
 
-## Template bootstrap
+## Preserved historical evidence
 
-The temporary bootstrap workflow verified the template directly before the canonical reusable workflows were enabled.
+The full bootstrap, earlier cross-repository pilot, initializer and skill verification record is preserved at [commit 4422bae](https://github.com/mortalkiller/filament-package-template/blob/4422bae7a57fe10b613cc04560ab81b3b973024a/docs/verification.md).
 
-Successful run:
+That historical record describes the previous deployment model and historical PlumbPHP results. Its instructions to use `main` as the default or release-promotion branch are superseded. Its successful legacy deployments do not prove the new release-tag deployment path, and its scanner scores are not a fresh verification of the migrated commits.
 
-- Bootstrap verification: https://github.com/mortalkiller/filament-package-template/actions/runs/35632702755
+## Shared implementation
 
-That run covered:
+The migration was integrated into `1.x` at `bca10ac79b2660fda013ef7e8ce2b5012e584e7a`. The consumer packages pin reusable workflows and supporting tooling to the validated commit `fd1b3f6ef3fd383de952c8a4f210c51b49f63e36`.
 
-- `composer validate --strict`;
-- dependency installation;
-- `composer check` (Pint, PHPStan and PHPUnit);
-- package initializer smoke test;
-- collaboration/repository file smoke test;
-- package-standard checker positive/negative fixture suite;
-- package-standard self-check using `--skip-plumb`;
-- Astro/Starlight dependency installation and production build.
+Freshly inspected successful pull-request runs for that tooling commit:
 
-## Canonical pull-request workflows
+- [Package standard](https://github.com/mortalkiller/filament-package-template/actions/runs/35657320429).
+- [Package tests](https://github.com/mortalkiller/filament-package-template/actions/runs/35657320478).
+- [Documentation](https://github.com/mortalkiller/filament-package-template/actions/runs/35657320398).
+- [Code quality](https://github.com/mortalkiller/filament-package-template/actions/runs/35657320435).
 
-Pull request #2 validates the actual reusable-workflow integration.
+The implementation contains the release planner, semantic channel selection, exact-tag checkout, major ancestry and exact-commit CI guards, safe major-directory synchronization, documentation version selector, initializer changes, updated skill and regression checks. PR and major-push documentation callers set `deploy: false` and do not inherit deployment secrets.
 
-Verified against commit `a43adedb360f2ff328c745ee452e8448390bec2f`:
+## Consumer migration evidence
 
-- Package tests: https://github.com/mortalkiller/filament-package-template/actions/runs/35633115334 — success.
-- Code quality: https://github.com/mortalkiller/filament-package-template/actions/runs/35633115350 — success.
-- Documentation: https://github.com/mortalkiller/filament-package-template/actions/runs/35633115286 — build success; production deploy correctly skipped for the pull request.
-- Package standard: https://github.com/mortalkiller/filament-package-template/actions/runs/35633115445 — success.
+### Filament Page Header
 
-## Package-standard checker
+Migration commit: `ac6517572306341a59d9d2de44fa40e45eb29010` on `2.x`.
 
-The checker currently validates objective repository requirements including:
+The following push runs were inspected and passed:
 
-- required public package files/workflow wrappers;
-- Composer package identity/type/license metadata;
-- canonical documentation URL and PlumbPHP badges for package-profile checks;
-- Starlight site/base/repository/personal-site configuration;
-- configured sensitive public-content patterns;
-- Git distribution hygiene.
+- [Package tests](https://github.com/mortalkiller/filament-page-header/actions/runs/35658407985), including PHP compatibility jobs, JavaScript and both browser jobs.
+- [Code quality](https://github.com/mortalkiller/filament-page-header/actions/runs/35658407789).
+- [Package standard](https://github.com/mortalkiller/filament-page-header/actions/runs/35658407700).
+- [Documentation](https://github.com/mortalkiller/filament-page-header/actions/runs/35658407603); the deploy job was skipped as intended.
 
-Fixture coverage includes:
+[PR #32](https://github.com/mortalkiller/filament-page-header/pull/32) subsequently removed the README badge dependency on the former promotion branch, after all four PR workflows passed. This is a documentation-only follow-up; verify the resulting branch-tip push checks before tagging a release.
 
-- valid package;
-- invalid Composer owner;
-- mismatched documentation base path;
-- synthetic private-key marker;
-- safe examples such as `127.0.0.1`, `example.com`, `/var/www/app` and `DOCS_HOST`;
-- development browser artifact leaking into `git archive`;
-- JSON output.
+### Filament Complete User Profile
 
-The template repository uses `--skip-plumb` because it is infrastructure rather than a published Filament package. Maintained public packages do not skip the Plumb badge check.
+Migration commit: `d68bcc4c3a237e7702040486a85e7b157319ae48` on `1.x`.
 
-## Cross-repository pilot verification
+The following push runs were inspected and passed:
 
-The reusable workflows are now verified from real consumer repositories against `mortalkiller/filament-package-template@1.x`.
+- [Tests](https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35658428608).
+- [Code quality](https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35658428706).
+- [Package standard](https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35658428845).
+- [Documentation](https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35658428589).
 
-### filament-complete-user-profile
+[PR #9](https://github.com/mortalkiller/filament-complete-user-profile/pull/9) subsequently corrected the README badge to `1.x`, after all four PR workflows passed. The existing Filament compatibility floor and test matrix were preserved. Verify the resulting branch-tip push checks before tagging a release.
 
-Stable `main` push evidence:
+## Preservation before retiring the old branch
 
-- Package tests: https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643432097 — success.
-- Code quality: https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643432079 — success.
-- Package standard: https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643432090 — success.
-- Documentation: https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643432121 — success.
+[PR #14](https://github.com/mortalkiller/filament-package-template/pull/14) preserved the previously merged Dependabot updates and the old template branch history in `1.x`, using a normal merge at `4422bae7a57fe10b613cc04560ab81b3b973024a`.
 
-The documentation run proves the cross-repository deployment design:
+The following PR checks passed before that merge:
 
-- reusable workflow resolved from the Standard v1 repository;
-- the consumer repository's `docs-production` environment was applied;
-- environment secrets resolved successfully;
-- SSH configuration succeeded;
-- production `rsync` deployment succeeded.
+- [Package standard](https://github.com/mortalkiller/filament-package-template/actions/runs/35660065500).
+- [Package tests](https://github.com/mortalkiller/filament-package-template/actions/runs/35660065517).
+- [Code quality](https://github.com/mortalkiller/filament-package-template/actions/runs/35660065469).
+- [Documentation](https://github.com/mortalkiller/filament-package-template/actions/runs/35660065496).
 
-PlumbPHP verification run:
+GitHub compare results confirmed the inspected old branch tips are ancestors of the corresponding major lines. No old branch or published tag was deleted or moved by this migration. The maintainer will delete the old branches after the administrative checks below.
 
-- https://github.com/mortalkiller/filament-complete-user-profile/actions/runs/35643716613
-- Ecosystem 100;
-- Maintenance 100;
-- Security 100;
-- Composite 100.
+Consumer workflow pins were intentionally not changed by the preservation merge. A new template commit is adopted explicitly, with package CI verification, rather than through an implicit moving branch reference.
 
-### filament-page-header
+## Operational acceptance still required
 
-Active `2.x` Standard v1 verification:
+At inspection, the template repository still used `main` as its default branch; the two consumer repositories already used their correct major branches. The connected tooling does not expose repository-administration writes or environment-policy management. These items must be verified separately:
 
-- Package tests: https://github.com/mortalkiller/filament-page-header/actions/runs/35645305814 — success.
-- Code quality: https://github.com/mortalkiller/filament-page-header/actions/runs/35645305495 — success.
-- Package standard: https://github.com/mortalkiller/filament-page-header/actions/runs/35645305865 — success.
-- Documentation: https://github.com/mortalkiller/filament-page-header/actions/runs/35645305375 — success.
+- Set the template default branch to `1.x`; keep the header on `2.x` and the profile on `1.x`.
+- Review protections and required checks for maintained major branches, including the template's `1.x`.
+- Review `docs-production` branch/tag policies so eligible stable release tags are permitted. Allow maintained major branches only when deliberate manual re-publication is needed. Do not remove existing reviewer or security protections.
+- Verify existing deployment configuration without exposing secret values. Real publication requires `DOCS_DEPLOY_ENABLED=true`.
+- Enable the template repository setting when the GitHub template-generation feature is intended.
+- Update installed local copies of the agent skill; repository changes do not update those copies automatically.
+- Publish and verify the first genuine stable release containing the migration. A historical tag without the versioned documentation configuration must not be moved or silently built from newer branch code.
+- Confirm a fresh PlumbPHP result for the relevant scanned ref before declaring package release acceptance complete.
 
-The package-test run includes:
-
-- Filament 4.12.6 exact minimum;
-- Filament 5.8.1 exact minimum;
-- latest supported Filament 4/5 combinations through PHP 8.5;
-- JavaScript unit tests;
-- Playwright Chromium on Filament 4.12.6;
-- Playwright Chromium on latest resolved Filament `^5.8.1`.
-
-Stable `main` verification after synchronizing published v2.3.1 and applying Standard v1 infrastructure:
-
-- Package tests: https://github.com/mortalkiller/filament-page-header/actions/runs/35647818493 — success.
-- Code quality: https://github.com/mortalkiller/filament-page-header/actions/runs/35647818496 — success.
-- Package standard: https://github.com/mortalkiller/filament-page-header/actions/runs/35647818424 — success.
-- Documentation: https://github.com/mortalkiller/filament-page-header/actions/runs/35647818418 — success, including production docs deployment.
-
-Current PlumbPHP stable-release scan still references v2.3.1 and therefore evaluates the pre-Standard docs workflow. Its current scores are Ecosystem 100, Maintenance 100, Security 78.38 and Composite 88.11. The only non-passing security check is `security.actions-sha-pinned`, with evidence pointing to four `@v4` references in the v2.3.1 docs workflow. Current `main` and `2.x` use the Standard v1 reusable docs workflow with SHA-pinned actions. A new stable patch release is required for Plumb to evaluate that corrected stable state.
-
-## Current compatibility and quality boundaries
-
-Verified after the initializer recovery and checker-hardening work:
-
-- Package tests: https://github.com/mortalkiller/filament-package-template/actions/runs/35634685752 — success.
-  - PHP 8.3 / Testbench ^11.0 / Filament 5.8.1 exact minimum — success.
-  - PHP 8.5 / Testbench ^11.0 / latest resolved Filament ^5.8.1 — success.
-- Code quality: https://github.com/mortalkiller/filament-package-template/actions/runs/35634685761 — success.
-  - Pint — success.
-  - PHPStan over `src/` and `tools/` — success.
-  - tracked PHP/JavaScript syntax — success.
-- Documentation: https://github.com/mortalkiller/filament-package-template/actions/runs/35634685717 — build success; PR deploy correctly skipped.
-- Package standard: https://github.com/mortalkiller/filament-package-template/actions/runs/35634685763 — success.
-
-The package initializer now also verifies safe resume after an interrupted initialization when the same persisted arguments are used, rejects mismatched resume arguments, and still rejects a second run after successful initialization.
-
-The public-content checker tests generic host-only filesystem paths, literal SSH infrastructure commands, text assets under `docs-site/public/`, configured secret markers, safe fictional/local examples, and Git worktree distribution behavior.
-
-## Agent skill status
-
-The `developing-filament-packages` skill is now authored directly from the approved Standard v1.
-
-Verified runtime package:
-
-```text
-skills/developing-filament-packages/
-├── SKILL.md
-├── README.md
-├── install.sh
-└── references/
-    ├── api-review.md
-    ├── release-checklist.md
-    └── standard-summary.md
-```
-
-Static verification covers:
-
-- required Agent Skills frontmatter and trigger description;
-- main skill size capped at 500 words;
-- Standard v1 source-of-truth reference;
-- branch conventions;
-- PlumbPHP Ecosystem/Maintenance/Security/Composite 100 gates;
-- required API/release/standard reference files.
-
-Installer verification covers:
-
-- normal install into an arbitrary skills directory;
-- installation of `SKILL.md` plus all runtime references;
-- refusal to overwrite an existing installation by default;
-- deliberate replacement only through `--force`.
-
-Verified in the package-test matrix on commit `c36ade5b5a32644db4f60e5f982126fdf63d9358`:
-
-- PHP 8.3 / exact minimum Filament boundary — success;
-- PHP 8.5 / latest allowed Filament boundary — success.
-
-The maintainer explicitly approved skipping synthetic fresh-agent RED/GREEN runs because results vary materially by model and runtime. This is recorded as a project decision rather than fabricated evidence.
-
-The committed behavioral scenarios remain under:
-
-```text
-skills/developing-filament-packages/tests/
-```
-
-They are retained for future regression testing when a suitable multi-agent harness is available. Standard v1 instead treats real package use as the empirical feedback loop for future Skill refinements.
-
-## Pending repository state
-
-The implementation and cross-repository pilots are complete. Remaining work requires repository settings or release actions not exposed by the connected GitHub tooling:
-
-- enable `mortalkiller/filament-package-template` as a GitHub Template Repository;
-- configure/review branch protection or rulesets for `main` and maintained `*.x` branches;
-- set `main` as the default branch for the existing package repositories;
-- publish a new stable `filament-page-header` patch release from the current stable `main` state so PlumbPHP can evaluate the SHA-pinned workflow state;
-- confirm the resulting `filament-page-header` PlumbPHP Security and Composite scores reach 100.
-
-## Final pre-merge verification
-
-Verified after the Skill, installer, Standard documentation update, initializer recovery behavior, compatibility matrix, and checker hardening were all present together:
-
-- Package tests: https://github.com/mortalkiller/filament-package-template/actions/runs/35636909739 — success.
-  - PHP 8.3 / Testbench ^11.0 / Filament 5.8.1 exact minimum.
-  - PHP 8.5 / Testbench ^11.0 / latest resolved Filament ^5.8.1.
-  - Skill static contract.
-  - Skill installer behavior.
-  - initializer smoke/recovery behavior.
-  - package-standard checker fixture suite.
-- Code quality: https://github.com/mortalkiller/filament-package-template/actions/runs/35636909741 — success.
-- Documentation: https://github.com/mortalkiller/filament-package-template/actions/runs/35636909721 — success; production deploy skipped on pull request.
-- Package standard: https://github.com/mortalkiller/filament-package-template/actions/runs/35636909724 — success.
-
-The Skill's synthetic fresh-agent RED/GREEN phase was intentionally waived by the maintainer and is not represented as executed evidence.
+No artificial public release was created for testing. No successful live deployment through the new release-tag path is asserted here. The existing public documentation remains separate from the newly integrated code until a verified release publication occurs.
