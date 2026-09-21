@@ -1,0 +1,69 @@
+name: Reusable code quality
+
+on:
+  workflow_call:
+    inputs:
+      php-version:
+        required: false
+        default: '8.4'
+        type: string
+      static-analysis:
+        required: false
+        default: true
+        type: boolean
+      lint-command:
+        required: false
+        default: composer lint
+        type: string
+      analyse-command:
+        required: false
+        default: composer analyse
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: ${{ inputs.php-version }}
+          extensions: intl, mbstring, pdo_sqlite, dom, fileinfo, curl, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate Composer package
+        run: composer validate --strict
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Check code style
+        env:
+          LINT_COMMAND: ${{ inputs.lint-command }}
+        run: bash -lc "$LINT_COMMAND"
+
+      - name: Run static analysis
+        if: ${{ inputs.static-analysis }}
+        env:
+          ANALYSE_COMMAND: ${{ inputs.analyse-command }}
+        run: bash -lc "$ANALYSE_COMMAND"
+
+      - name: Check tracked PHP syntax
+        run: git ls-files -z '*.php' | xargs -0 -r -n 1 php -l
+
+      - name: Check tracked JavaScript syntax
+        shell: bash
+        run: |
+          mapfile -d '' files < <(git ls-files -z '*.js' '*.mjs')
+          if (( ${#files[@]} > 0 )); then
+            printf '%s\0' "${files[@]}" | xargs -0 -n 1 node --check
+          fi

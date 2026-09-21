@@ -1,0 +1,40 @@
+name: Documentation
+
+on:
+  pull_request:
+    paths:
+      - 'docs-site/**'
+      - 'docs/**'
+      - 'README.md'
+      - 'SECURITY.md'
+      - '.github/workflows/docs.yml'
+      - '.github/workflows/reusable-docs.yml'
+  push:
+    branches:
+      - main
+      - '1.x'
+    paths:
+      - 'docs-site/**'
+      - 'docs/**'
+      - 'README.md'
+      - 'SECURITY.md'
+      - '.github/workflows/docs.yml'
+      - '.github/workflows/reusable-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    uses: ./.github/workflows/reusable-docs.yml
+    with:
+      artifact-name: filament-package-template-docs
+      deploy: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && vars.DOCS_DEPLOY_ENABLED == 'true' }}
+      docs-port: ${{ vars.DOCS_PORT || '22' }}
+      docs-remote-path: ${{ vars.DOCS_REMOTE_PATH }}
+    secrets: inherit

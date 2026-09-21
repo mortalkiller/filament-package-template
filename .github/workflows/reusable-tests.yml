@@ -1,0 +1,54 @@
+name: Reusable PHP tests
+
+on:
+  workflow_call:
+    inputs:
+      matrix-json:
+        description: JSON strategy matrix containing php, testbench, and filament entries.
+        required: true
+        type: string
+      test-command:
+        description: Command used to run the package PHP test suite.
+        required: false
+        default: composer test
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.matrix-json) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: intl, mbstring, pdo_sqlite, dom, fileinfo, curl, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate Composer package
+        run: composer validate --strict --no-check-lock
+
+      - name: Resolve compatibility boundary
+        env:
+          TESTBENCH_CONSTRAINT: ${{ matrix.testbench }}
+          FILAMENT_CONSTRAINT: ${{ matrix.filament }}
+        run: |
+          composer require --dev "orchestra/testbench:${TESTBENCH_CONSTRAINT}" --no-update --no-interaction
+          composer require "filament/filament:${FILAMENT_CONSTRAINT}" --no-update --no-interaction
+          composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run PHP tests
+        env:
+          TEST_COMMAND: ${{ inputs.test-command }}
+        run: bash -lc "$TEST_COMMAND"
