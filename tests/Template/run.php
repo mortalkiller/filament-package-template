@@ -105,4 +105,67 @@ if ($secondCode === 0 || ! str_contains(implode("\n", $second), 'Package templat
     exit(6);
 }
 
+$partial = sys_get_temp_dir().'/fpt-partial-'.bin2hex(random_bytes(4));
+mkdir($partial, 0777, true);
+$copy($repo, $partial);
+
+$partialComposer = (string) file_get_contents($partial.'/composer.json');
+$partialComposer = str_replace(
+    '"name": "mortalkiller/filament-package-template"',
+    '"name": "mortalkiller/filament-example"',
+    $partialComposer,
+);
+file_put_contents($partial.'/composer.json', $partialComposer);
+
+$state = [
+    'slug' => 'filament-example',
+    'title' => 'Filament Example',
+    'namespace' => 'MortalKiller\\FilamentExample',
+    'description' => 'Example Filament package.',
+];
+file_put_contents(
+    $partial.'/.template/.initializing.json',
+    json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n",
+);
+
+$partialCmd = sprintf(
+    'PACKAGE_TEMPLATE_ROOT=%s php %s --slug=%s --title=%s --namespace=%s --description=%s 2>&1',
+    escapeshellarg($partial),
+    escapeshellarg($initializer),
+    escapeshellarg($state['slug']),
+    escapeshellarg($state['title']),
+    escapeshellarg($state['namespace']),
+    escapeshellarg($state['description']),
+);
+exec($partialCmd, $partialOutput, $partialCode);
+if ($partialCode !== 0 || file_exists($partial.'/.template')) {
+    fwrite(STDERR, "Matching partial initialization did not resume safely:\n".implode("\n", $partialOutput)."\n");
+    exit(7);
+}
+
+$mismatch = sys_get_temp_dir().'/fpt-mismatch-'.bin2hex(random_bytes(4));
+mkdir($mismatch, 0777, true);
+$copy($repo, $mismatch);
+file_put_contents(
+    $mismatch.'/.template/.initializing.json',
+    json_encode($state, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n",
+);
+$mismatchCmd = sprintf(
+    'PACKAGE_TEMPLATE_ROOT=%s php %s --slug=%s --title=%s --namespace=%s --description=%s 2>&1',
+    escapeshellarg($mismatch),
+    escapeshellarg($initializer),
+    escapeshellarg('filament-different'),
+    escapeshellarg($state['title']),
+    escapeshellarg($state['namespace']),
+    escapeshellarg($state['description']),
+);
+exec($mismatchCmd, $mismatchOutput, $mismatchCode);
+if (
+    $mismatchCode === 0
+    || ! str_contains(implode("\n", $mismatchOutput), 'Initialization is already in progress with different arguments.')
+) {
+    fwrite(STDERR, "Mismatched partial initialization was not rejected safely\n");
+    exit(8);
+}
+
 echo "initializer smoke test passed\n";
