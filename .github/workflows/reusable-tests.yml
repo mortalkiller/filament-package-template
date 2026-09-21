@@ -44,6 +44,7 @@ jobs:
           TESTBENCH_CONSTRAINT: ${{ matrix.testbench }}
           FILAMENT_CONSTRAINT: ${{ matrix.filament }}
           DEPENDENCY_MODE: ${{ matrix.dependencies || 'latest' }}
+          EXPECTED_FILAMENT_VERSION: ${{ matrix.expected_filament || '' }}
         run: |
           set -euo pipefail
           composer require --dev "orchestra/testbench:${TESTBENCH_CONSTRAINT}" --no-update --no-interaction
@@ -63,6 +64,15 @@ jobs:
           esac
 
           composer show filament/filament
+
+          if [[ -n "${EXPECTED_FILAMENT_VERSION:-}" ]]; then
+            resolved_version="$(composer show filament/filament --format=json | php -r '$data = json_decode(stream_get_contents(STDIN), true); $version = $data["versions"][0] ?? ""; echo preg_replace("/^[* ]*v?/", "", $version);')"
+
+            if [[ "$resolved_version" != "$EXPECTED_FILAMENT_VERSION" ]]; then
+              echo "Expected Filament [$EXPECTED_FILAMENT_VERSION], resolved [$resolved_version]." >&2
+              exit 1
+            fi
+          fi
 
       - name: Audit resolved dependencies
         run: composer audit --locked --no-interaction
