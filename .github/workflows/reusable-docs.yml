@@ -1,0 +1,109 @@
+name: Reusable documentation
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        required: true
+        type: string
+      docs-directory:
+        required: false
+        default: docs-site
+        type: string
+      node-version:
+        required: false
+        default: '22.20.0'
+        type: string
+      deploy:
+        required: false
+        default: false
+        type: boolean
+      environment-name:
+        required: false
+        default: docs-production
+        type: string
+      docs-port:
+        required: false
+        default: '22'
+        type: string
+      docs-remote-path:
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Install documentation dependencies
+        working-directory: ${{ inputs.docs-directory }}
+        run: npm install --no-audit --no-fund
+
+      - name: Build documentation
+        working-directory: ${{ inputs.docs-directory }}
+        run: npm run build
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.docs-directory }}/dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Deploy documentation
+    needs: build
+    if: ${{ inputs.deploy }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment-name }}
+    steps:
+      - name: Download documentation artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.docs-directory }}/dist
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.DOCS_SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.DOCS_SSH_KNOWN_HOSTS }}
+        run: |
+          test -n "$SSH_PRIVATE_KEY"
+          test -n "$SSH_KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy documentation
+        env:
+          DOCS_HOST: ${{ secrets.DOCS_HOST }}
+          DOCS_USER: ${{ secrets.DOCS_USER }}
+          DOCS_PORT: ${{ inputs.docs-port }}
+          DOCS_REMOTE_PATH: ${{ inputs.docs-remote-path }}
+          DOCS_DIRECTORY: ${{ inputs.docs-directory }}
+        run: |
+          test -n "$DOCS_HOST"
+          test -n "$DOCS_USER"
+          test -n "$DOCS_PORT"
+          test -n "$DOCS_REMOTE_PATH"
+          rsync -az --delete \
+            -e "ssh -p $DOCS_PORT -i ~/.ssh/id_ed25519" \
+            "$DOCS_DIRECTORY/dist/" \
+            "$DOCS_USER@$DOCS_HOST:$DOCS_REMOTE_PATH/"

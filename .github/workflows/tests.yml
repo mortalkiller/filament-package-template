@@ -1,0 +1,22 @@
+name: Package tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - '1.x'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    uses: ./.github/workflows/reusable-tests.yml
+    with:
+      matrix-json: >-
+        {"include":[{"php":"8.3","testbench":"^11.0","filament":"5.8.1"},{"php":"8.5","testbench":"^11.0","filament":"^5.8.1"}]}
