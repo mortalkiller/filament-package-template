@@ -117,8 +117,9 @@ if ($safeCode !== 0) {
 }
 
 $archive = $makeFixture('filament-example');
-file_put_contents($archive.'/composer.lock', "{}\n");
-exec('git -C '.escapeshellarg($archive).' add -f composer.lock');
+mkdir($archive.'/playwright-report', 0777, true);
+file_put_contents($archive.'/playwright-report/report.html', "<html></html>\n");
+exec('git -C '.escapeshellarg($archive).' add playwright-report/report.html');
 exec('git -C '.escapeshellarg($archive).' commit -qm forbidden');
 [$archiveCode, $archiveOutput] = $run($archive);
 if ($archiveCode !== 1 || ! str_contains($archiveOutput, 'distribution.development_path')) {
