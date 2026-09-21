@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       matrix-json:
-        description: JSON strategy matrix containing php, testbench, and filament entries.
+        description: JSON strategy matrix containing php, testbench, filament, and optional dependencies entries.
         required: true
         type: string
       test-command:
@@ -43,10 +43,29 @@ jobs:
         env:
           TESTBENCH_CONSTRAINT: ${{ matrix.testbench }}
           FILAMENT_CONSTRAINT: ${{ matrix.filament }}
+          DEPENDENCY_MODE: ${{ matrix.dependencies || 'latest' }}
         run: |
+          set -euo pipefail
           composer require --dev "orchestra/testbench:${TESTBENCH_CONSTRAINT}" --no-update --no-interaction
           composer require "filament/filament:${FILAMENT_CONSTRAINT}" --no-update --no-interaction
-          composer update --prefer-dist --no-interaction --no-progress
+
+          case "$DEPENDENCY_MODE" in
+            lowest)
+              composer update --prefer-lowest --prefer-dist --no-interaction --no-progress
+              ;;
+            latest)
+              composer update --prefer-dist --no-interaction --no-progress
+              ;;
+            *)
+              echo "Unsupported dependency mode: $DEPENDENCY_MODE" >&2
+              exit 1
+              ;;
+          esac
+
+          composer show filament/filament
+
+      - name: Audit resolved dependencies
+        run: composer audit --locked --no-interaction
 
       - name: Run PHP tests
         env:
