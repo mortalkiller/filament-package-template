@@ -145,3 +145,21 @@ Before Standard v1 is operational:
 - run cross-repository pilots;
 - adopt the standard in the existing package repositories;
 - record PlumbPHP 100 evidence for maintained public package releases.
+
+
+## Final pre-merge verification
+
+Verified after the Skill, installer, Standard documentation update, initializer recovery behavior, compatibility matrix, and checker hardening were all present together:
+
+- Package tests: https://github.com/mortalkiller/filament-package-template/actions/runs/35636909739 — success.
+  - PHP 8.3 / Testbench ^11.0 / Filament 5.8.1 exact minimum.
+  - PHP 8.5 / Testbench ^11.0 / latest resolved Filament ^5.8.1.
+  - Skill static contract.
+  - Skill installer behavior.
+  - initializer smoke/recovery behavior.
+  - package-standard checker fixture suite.
+- Code quality: https://github.com/mortalkiller/filament-package-template/actions/runs/35636909741 — success.
+- Documentation: https://github.com/mortalkiller/filament-package-template/actions/runs/35636909721 — success; production deploy skipped on pull request.
+- Package standard: https://github.com/mortalkiller/filament-package-template/actions/runs/35636909724 — success.
+
+The Skill's synthetic fresh-agent RED/GREEN phase was intentionally waived by the maintainer and is not represented as executed evidence.
