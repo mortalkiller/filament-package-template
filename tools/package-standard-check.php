@@ -9,6 +9,7 @@ use MortalKiller\PackageStandard\Checks\DocsCheck;
 use MortalKiller\PackageStandard\Checks\PublicContentCheck;
 use MortalKiller\PackageStandard\Checks\ReadmeCheck;
 use MortalKiller\PackageStandard\Checks\RequiredFilesCheck;
+use MortalKiller\PackageStandard\Checks\WorkflowSecurityCheck;
 
 require __DIR__.'/src/Finding.php';
 require __DIR__.'/src/CheckResult.php';
@@ -18,6 +19,7 @@ require __DIR__.'/src/Checks/ReadmeCheck.php';
 require __DIR__.'/src/Checks/DocsCheck.php';
 require __DIR__.'/src/Checks/PublicContentCheck.php';
 require __DIR__.'/src/Checks/DistributionCheck.php';
+require __DIR__.'/src/Checks/WorkflowSecurityCheck.php';
 
 $args = array_slice($argv, 1);
 $json = false;
@@ -70,6 +72,7 @@ if ($identity !== null) {
 
 (new PublicContentCheck)->run($resolved, $result);
 (new DistributionCheck)->run($resolved, $result);
+(new WorkflowSecurityCheck)->run($resolved, $result);
 
 if ($json) {
     echo json_encode($result->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR).PHP_EOL;

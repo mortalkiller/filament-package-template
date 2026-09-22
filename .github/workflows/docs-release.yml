@@ -29,4 +29,3 @@ jobs:
       dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}
       docs-port: ${{ vars.DOCS_PORT || '22' }}
       docs-remote-path: ${{ vars.DOCS_REMOTE_PATH }}
-    secrets: inherit
