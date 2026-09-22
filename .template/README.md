@@ -7,3 +7,5 @@ Run `.template/initialize-package.php` with `--slug`, `--title`, `--namespace`, 
 The initializer changes package identity, converts relative workflow calls into SHA-pinned calls, pins the checker/publication tools with `standard-ref`, and removes template-only tooling, while generated packages consume the canonical maintainer standard from `mortalkiller/filament-package-standard`. A generated package can later add its own consumer-facing skill under `resources/boost/skills/<skill-name>/` when appropriate. It rejects invalid input and unsafe reinitialization, and can resume an interrupted initialization only when the original arguments match.
 
 After initialization, run package CI and configure branch protection, release-tag/environment policies and deployment variables. Documentation remains unpublished until a stable release is explicitly published with deployment enabled. No secrets belong in this repository.
+
+Generated packages include `laravel/boost:^2.9` and `mortalkiller/filament-package-standard:^1.0` as development dependencies. After `composer install`, run `vendor/bin/testbench boost:update` to discover and synchronize the canonical maintainer skill.
