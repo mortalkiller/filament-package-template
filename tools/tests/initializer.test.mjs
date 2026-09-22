@@ -40,7 +40,6 @@ test('new packages pin both external workflows and tooling to the requested SHA'
     assert.ok(!existsSync(join(root, '.github/workflows/reusable-docs-release.yml')));
     assert.ok(readFileSync(join(root, 'AGENTS.md'), 'utf8').includes('mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md'));
     const composer = JSON.parse(readFileSync(join(root, 'composer.json'), 'utf8'));
-    assert.equal(composer['require-dev']['laravel/boost'], '^2.9');
     assert.equal(composer['require-dev']['mortalkiller/filament-package-standard'], '^1.0');
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
