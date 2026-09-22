@@ -32,6 +32,22 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Cache Composer dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: ~/.composer/cache/files
+          key: composer-quality-${{ inputs.php-version }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            composer-quality-${{ inputs.php-version }}-
+
+      - name: Cache PHPStan results
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: build/phpstan
+          key: phpstan-${{ inputs.php-version }}-${{ github.sha }}
+          restore-keys: |
+            phpstan-${{ inputs.php-version }}-
+
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
         with:

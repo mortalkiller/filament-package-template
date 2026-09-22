@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       matrix-json:
-        description: JSON strategy matrix containing php, testbench, filament, and optional dependencies entries.
+        description: JSON strategy matrix containing os, php, laravel, testbench, filament, and optional dependencies entries.
         required: true
         type: string
       test-command:
@@ -18,15 +18,25 @@ permissions:
 
 jobs:
   php:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.matrix-json) }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - F${{ matrix.filament }} - ${{ matrix.dependencies || 'latest' }} - ${{ matrix.os || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ matrix.os || 'ubuntu-latest' }}-${{ matrix.php }}-${{ matrix.laravel }}-${{ matrix.filament }}-${{ matrix.dependencies || 'latest' }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            composer-${{ matrix.os || 'ubuntu-latest' }}-${{ matrix.php }}-${{ matrix.laravel }}-
+            composer-${{ matrix.os || 'ubuntu-latest' }}-${{ matrix.php }}-
 
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
@@ -40,15 +50,17 @@ jobs:
         run: composer validate --strict --no-check-lock
 
       - name: Resolve compatibility boundary
+        shell: bash
         env:
+          LARAVEL_CONSTRAINT: ${{ matrix.laravel }}
           TESTBENCH_CONSTRAINT: ${{ matrix.testbench }}
           FILAMENT_CONSTRAINT: ${{ matrix.filament }}
           DEPENDENCY_MODE: ${{ matrix.dependencies || 'latest' }}
           EXPECTED_FILAMENT_VERSION: ${{ matrix.expected_filament || '' }}
         run: |
           set -euo pipefail
+          composer require "laravel/framework:${LARAVEL_CONSTRAINT}" "filament/filament:${FILAMENT_CONSTRAINT}" --no-update --no-interaction
           composer require --dev "orchestra/testbench:${TESTBENCH_CONSTRAINT}" --no-update --no-interaction
-          composer require "filament/filament:${FILAMENT_CONSTRAINT}" --no-update --no-interaction
 
           case "$DEPENDENCY_MODE" in
             lowest)
@@ -63,6 +75,7 @@ jobs:
               ;;
           esac
 
+          composer show laravel/framework
           composer show filament/filament
 
           if [[ -n "${EXPECTED_FILAMENT_VERSION:-}" ]]; then
@@ -80,4 +93,5 @@ jobs:
       - name: Run PHP tests
         env:
           TEST_COMMAND: ${{ inputs.test-command }}
+        shell: bash
         run: bash -lc "$TEST_COMMAND"
