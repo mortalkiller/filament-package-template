@@ -16,13 +16,14 @@
   "require": {
     "php": "^8.2",
     "filament/filament": "^5.8.1",
+    "illuminate/support": "^12.0|^13.0",
     "spatie/laravel-package-tools": "^1.15.0"
   },
   "require-dev": {
     "larastan/larastan": "^3.0",
     "laravel/pint": "^1.0",
     "mortalkiller/filament-package-standard": "^1.0",
-    "orchestra/testbench": "^9.0|^10.0|^11.0",
+    "orchestra/testbench": "^10.0|^11.0",
     "phpunit/phpunit": "^11.5|^12.0",
     "rector/rector": "^2.0"
   },

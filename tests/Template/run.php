@@ -44,8 +44,17 @@ $run = static function (string $root, array $input) use ($initializer): array {
     foreach ($input as $key => $value) {
         $args[] = '--'.str_replace('_', '-', $key).'='.escapeshellarg($value);
     }
-    $command = 'PACKAGE_TEMPLATE_ROOT='.escapeshellarg($root).' '.escapeshellarg(PHP_BINARY).' '.escapeshellarg($initializer).' '.implode(' ', $args).' 2>&1';
+
+    $previousRoot = getenv('PACKAGE_TEMPLATE_ROOT');
+    putenv('PACKAGE_TEMPLATE_ROOT='.$root);
+    $command = escapeshellarg(PHP_BINARY).' '.escapeshellarg($initializer).' '.implode(' ', $args).' 2>&1';
     exec($command, $output, $code);
+
+    if ($previousRoot === false) {
+        putenv('PACKAGE_TEMPLATE_ROOT');
+    } else {
+        putenv('PACKAGE_TEMPLATE_ROOT='.$previousRoot);
+    }
 
     return [$code, implode("\n", $output)];
 };
