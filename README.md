@@ -50,7 +50,7 @@ In `mortalkiller/filament-package-template`, choose a full 40-character commit S
 - Package standard
 - Zizmor
 
-Do not use `1.x`, `HEAD`, or another mutable reference as the workflow reference.
+Do not use `2.x`, `HEAD`, or another mutable reference as the workflow reference.
 
 ### 3. Run the initializer
 
