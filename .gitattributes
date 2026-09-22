@@ -11,3 +11,10 @@
 /phpunit.xml.dist export-ignore
 /pint.json export-ignore
 /rector.php export-ignore
+/bin export-ignore
+/package.json export-ignore
+/playwright.config.mjs export-ignore
+/testbench.yaml export-ignore
+/workbench export-ignore
+/resources/css export-ignore
+/resources/js export-ignore
