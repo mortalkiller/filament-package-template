@@ -7,16 +7,54 @@ const TEMPLATE_TITLE = 'Filament Package Template';
 const TEMPLATE_NAMESPACE = 'MortalKiller\\FilamentPackageTemplate';
 const TEMPLATE_STEM = 'FilamentPackageTemplate';
 const TEMPLATE_DESCRIPTION = 'Template for MortalKiller Filament packages.';
+const TEMPLATE_SNAKE = 'filament_package_template';
 
 $root = getenv('PACKAGE_TEMPLATE_ROOT');
 $root = is_string($root) && $root !== '' ? $root : dirname(__DIR__);
 $root = rtrim($root, DIRECTORY_SEPARATOR);
-$options = getopt('', ['slug:', 'title:', 'namespace:', 'description:', 'workflow-ref:']);
+$options = getopt('', [
+    'slug:',
+    'title:',
+    'namespace:',
+    'description:',
+    'workflow-ref:',
+    'type:',
+    'with-config',
+    'with-database',
+    'with-views',
+    'with-translations',
+    'with-stubs',
+    'with-assets',
+    'with-workbench',
+    'with-browser-tests',
+    'with-rector',
+]);
+
 $slug = trim((string) ($options['slug'] ?? ''));
 $title = trim((string) ($options['title'] ?? ''));
 $namespace = trim((string) ($options['namespace'] ?? ''));
 $description = trim((string) ($options['description'] ?? ''));
 $workflowRef = trim((string) ($options['workflow-ref'] ?? ''));
+$type = trim((string) ($options['type'] ?? 'plugin'));
+
+$capabilities = [
+    'config' => array_key_exists('with-config', $options),
+    'database' => array_key_exists('with-database', $options),
+    'views' => array_key_exists('with-views', $options),
+    'translations' => array_key_exists('with-translations', $options),
+    'stubs' => array_key_exists('with-stubs', $options),
+    'assets' => array_key_exists('with-assets', $options),
+    'workbench' => array_key_exists('with-workbench', $options),
+    'browser-tests' => array_key_exists('with-browser-tests', $options),
+    'rector' => array_key_exists('with-rector', $options),
+];
+
+if ($type === 'theme') {
+    $capabilities['assets'] = true;
+}
+if ($capabilities['browser-tests']) {
+    $capabilities['workbench'] = true;
+}
 
 $fail = static function (string $message): never {
     fwrite(STDERR, $message.PHP_EOL);
@@ -53,13 +91,27 @@ if ($description === '') {
 if (! preg_match('/^[a-f0-9]{40}$/', $workflowRef)) {
     $fail('The --workflow-ref value must be a validated full 40-character template commit SHA.');
 }
+$profiles = [
+    'plugin' => 'filament/filament',
+    'theme' => 'filament/filament',
+    'forms' => 'filament/forms',
+    'tables' => 'filament/tables',
+    'library' => 'filament/support',
+];
+if (! array_key_exists($type, $profiles)) {
+    $fail('The --type value must be one of: plugin, theme, forms, tables, library.');
+}
 
+$enabledCapabilities = array_keys(array_filter($capabilities));
+sort($enabledCapabilities);
 $requestedState = [
     'slug' => $slug,
     'title' => $title,
     'namespace' => $namespace,
     'description' => $description,
     'workflow_ref' => $workflowRef,
+    'type' => $type,
+    'capabilities' => $enabledCapabilities,
 ];
 $statePath = $templateDirectory.'/.initializing.json';
 if (is_file($statePath)) {
@@ -92,6 +144,82 @@ if (is_file($statePath)) {
 
 $segments = explode('\\', $namespace);
 $stem = (string) end($segments);
+$packageSnake = str_replace('-', '_', $slug);
+$runtimePackage = $profiles[$type];
+$hasPanelPlugin = in_array($type, ['plugin', 'theme'], true);
+
+$removeTree = static function (string $path) use (&$removeTree): void {
+    if (! file_exists($path)) {
+        return;
+    }
+    if (is_file($path) || is_link($path)) {
+        if (! @unlink($path)) {
+            throw new RuntimeException('Unable to remove ['.$path.'].');
+        }
+        return;
+    }
+    foreach (scandir($path) ?: [] as $entry) {
+        if ($entry !== '.' && $entry !== '..') {
+            $removeTree($path.'/'.$entry);
+        }
+    }
+    if (! @rmdir($path)) {
+        throw new RuntimeException('Unable to remove ['.$path.'].');
+    }
+};
+
+$copyTree = static function (string $source, string $target) use (&$copyTree, $fail): void {
+    if (! file_exists($source)) {
+        $fail('Missing scaffold ['.$source.'].');
+    }
+    if (is_file($source)) {
+        if (! is_dir(dirname($target)) && ! mkdir(dirname($target), 0777, true) && ! is_dir(dirname($target))) {
+            $fail('Unable to create scaffold directory ['.dirname($target).'].');
+        }
+        if (! copy($source, $target)) {
+            $fail('Unable to copy scaffold ['.$source.'].');
+        }
+        return;
+    }
+    if (! is_dir($target) && ! mkdir($target, 0777, true) && ! is_dir($target)) {
+        $fail('Unable to create scaffold directory ['.$target.'].');
+    }
+    foreach (scandir($source) ?: [] as $entry) {
+        if ($entry !== '.' && $entry !== '..') {
+            $copyTree($source.'/'.$entry, $target.'/'.$entry);
+        }
+    }
+};
+
+$scaffolds = $templateDirectory.'/scaffolds';
+if ($capabilities['config']) {
+    $copyTree($scaffolds.'/config/config.php', $root.'/config/'.$slug.'.php');
+}
+if ($capabilities['database']) {
+    $copyTree($scaffolds.'/database/create_table.php.stub', $root.'/database/migrations/create_'.$packageSnake.'_table.php.stub');
+}
+if ($capabilities['views']) {
+    $copyTree($scaffolds.'/views', $root.'/resources/views');
+}
+if ($capabilities['translations']) {
+    $copyTree($scaffolds.'/translations/en/package.php', $root.'/resources/lang/en/'.$slug.'.php');
+}
+if ($capabilities['stubs']) {
+    $copyTree($scaffolds.'/stubs', $root.'/stubs');
+}
+if ($capabilities['assets']) {
+    $copyTree($scaffolds.'/assets/bin', $root.'/bin');
+    $copyTree($scaffolds.'/assets/resources', $root.'/resources');
+}
+if ($capabilities['workbench']) {
+    $copyTree($scaffolds.'/workbench/testbench.yaml', $root.'/testbench.yaml');
+    $copyTree($scaffolds.'/workbench/workbench', $root.'/workbench');
+}
+if ($capabilities['browser-tests']) {
+    $copyTree($scaffolds.'/browser/playwright.config.mjs', $root.'/playwright.config.mjs');
+    $copyTree($scaffolds.'/browser/tests', $root.'/tests/Browser');
+}
+
 $packageReadme = $templateDirectory.'/README.package.md';
 if (! is_file($packageReadme)) {
     $fail('The package README template is missing.');
@@ -100,6 +228,9 @@ if (! copy($packageReadme, $root.'/README.md')) {
     $fail('Unable to create the package README.');
 }
 
+$pluginRegistration = $hasPanelPlugin
+    ? "\n            ->plugin(\\{$namespace}\\{$stem}Plugin::make())"
+    : '';
 $replace = [
     TEMPLATE_SLUG => $slug,
     TEMPLATE_TITLE => $title,
@@ -107,7 +238,10 @@ $replace = [
     TEMPLATE_NAMESPACE => $namespace,
     TEMPLATE_STEM => $stem,
     TEMPLATE_DESCRIPTION => $description,
+    TEMPLATE_SNAKE => $packageSnake,
+    '/* __PACKAGE_PLUGIN_REGISTRATION__ */' => $pluginRegistration,
     'standard-ref: ${{ github.sha }}' => 'standard-ref: '.$workflowRef,
+    '"filament_package":"filament/filament"' => '"filament_package":"'.$runtimePackage.'"',
 ];
 foreach (['tests', 'quality', 'docs', 'docs-release', 'browser-tests', 'standard-check'] as $workflow) {
     $name = 'reusable-'.$workflow.'.yml';
@@ -133,7 +267,6 @@ foreach ($iterator as $file) {
     if (! is_string($content) || str_contains($content, "\0")) {
         continue;
     }
-    // Preserve canonical references already written before an interrupted initialization.
     $protected = str_replace(
         'mortalkiller/filament-package-template/.github/workflows/',
         '__CANONICAL_PACKAGE_WORKFLOWS__/',
@@ -157,20 +290,139 @@ foreach ($writes as $write) {
     }
 }
 
+$oldProvider = $root.'/src/'.TEMPLATE_STEM.'ServiceProvider.php';
+$newProvider = $root.'/src/'.$stem.'ServiceProvider.php';
+if (is_file($oldProvider) && $oldProvider !== $newProvider && ! rename($oldProvider, $newProvider)) {
+    $fail('Unable to rename the package service provider.');
+}
+$oldPlugin = $root.'/src/'.TEMPLATE_STEM.'Plugin.php';
+$newPlugin = $root.'/src/'.$stem.'Plugin.php';
+if ($hasPanelPlugin) {
+    if (is_file($oldPlugin) && $oldPlugin !== $newPlugin && ! rename($oldPlugin, $newPlugin)) {
+        $fail('Unable to rename the Filament plugin class.');
+    }
+} else {
+    @unlink($oldPlugin);
+    @unlink($root.'/tests/Unit/PluginTest.php');
+}
+
 try {
     $generatedComposer = json_decode((string) file_get_contents($composerPath), true, flags: JSON_THROW_ON_ERROR);
+    $generatedComposer['require'] ??= [];
     $generatedComposer['require-dev'] ??= [];
+    $generatedComposer['autoload-dev'] ??= [];
+    $generatedComposer['autoload-dev']['psr-4'] ??= [];
+    $generatedComposer['scripts'] ??= [];
+    foreach (['filament/filament', 'filament/forms', 'filament/tables', 'filament/support'] as $filamentPackage) {
+        unset($generatedComposer['require'][$filamentPackage]);
+    }
+    $generatedComposer['require'][$runtimePackage] = '^5.8.1';
     $generatedComposer['require-dev']['mortalkiller/filament-package-standard'] = '^1.0';
+
+    if ($capabilities['workbench'] && $runtimePackage !== 'filament/filament') {
+        $generatedComposer['require-dev']['filament/filament'] = '^5.8.1';
+    }
+
+    if ($capabilities['workbench']) {
+        $generatedComposer['autoload-dev']['psr-4']['Workbench\\'] = 'workbench/';
+        $generatedComposer['scripts']['serve'] = '@php vendor/bin/testbench serve';
+    }
+
+    if ($capabilities['browser-tests']) {
+        $generatedComposer['scripts']['browser:prepare'] = '@php vendor/bin/testbench package:discover --ansi';
+    }
+
+    if (! $capabilities['rector']) {
+        unset($generatedComposer['require-dev']['rector/rector']);
+        unset($generatedComposer['scripts']['refactor'], $generatedComposer['scripts']['test:refactor']);
+        $generatedComposer['scripts']['check'] = array_values(array_filter(
+            $generatedComposer['scripts']['check'] ?? [],
+            static fn (mixed $script): bool => $script !== '@test:refactor',
+        ));
+        @unlink($root.'/rector.php');
+    }
+
+    ksort($generatedComposer['require']);
     ksort($generatedComposer['require-dev']);
+    ksort($generatedComposer['autoload-dev']['psr-4']);
+    ksort($generatedComposer['scripts']);
     $generatedComposerContent = json_encode(
         $generatedComposer,
         JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
     ).PHP_EOL;
 } catch (Throwable) {
-    $fail('Unable to configure the package standard development dependency.');
+    $fail('Unable to configure generated composer.json.');
 }
 if (file_put_contents($composerPath, $generatedComposerContent) === false) {
     $fail('Unable to write composer.json.');
+}
+
+if ($capabilities['assets'] || $capabilities['browser-tests']) {
+    $packageJson = [
+        'private' => true,
+        'type' => 'module',
+        'scripts' => [],
+        'devDependencies' => [],
+    ];
+    if ($capabilities['assets']) {
+        $packageJson['scripts']['dev'] = 'node bin/build.js --dev';
+        $packageJson['scripts']['build'] = 'node bin/build.js';
+        $packageJson['devDependencies']['esbuild'] = '^0.28.0';
+        $packageJson['devDependencies']['prettier'] = '^3.5.3';
+    }
+    if ($capabilities['browser-tests']) {
+        $packageJson['scripts']['test:browser'] = 'playwright test';
+        $packageJson['devDependencies']['@playwright/test'] = '^1.55.0';
+    }
+    ksort($packageJson['scripts']);
+    ksort($packageJson['devDependencies']);
+    file_put_contents(
+        $root.'/package.json',
+        json_encode($packageJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR).PHP_EOL,
+    );
+
+    $dependabotPath = $root.'/.github/dependabot.yml';
+    $dependabot = (string) file_get_contents($dependabotPath);
+    if (! str_contains($dependabot, "package-ecosystem: npm\n    directory: /\n")) {
+        $dependabot .= <<<'YAML'
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+YAML;
+        $dependabot .= PHP_EOL;
+        file_put_contents($dependabotPath, $dependabot);
+    }
+}
+
+if ($capabilities['browser-tests']) {
+    $browserWorkflow = <<<YAML
+name: Browser tests
+
+on:
+  pull_request:
+  push:
+    branches: ['*.x']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: browser-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    uses: mortalkiller/filament-package-template/.github/workflows/reusable-browser-tests.yml@{$workflowRef}
+    with:
+      filament-matrix-json: >-
+        {"include":[{"filament":"^5.8.1"}]}
+YAML;
+    file_put_contents($root.'/.github/workflows/browser-tests.yml', $browserWorkflow.PHP_EOL);
 }
 
 $agentInstructions = <<<'MARKDOWN'
@@ -205,32 +457,6 @@ foreach (['AGENTS.md' => $agentInstructions, 'CONTRIBUTING.md' => $contributing]
     }
 }
 
-$oldProvider = $root.'/src/'.TEMPLATE_STEM.'ServiceProvider.php';
-$newProvider = $root.'/src/'.$stem.'ServiceProvider.php';
-if (is_file($oldProvider) && $oldProvider !== $newProvider && ! rename($oldProvider, $newProvider)) {
-    $fail('Unable to rename the package service provider.');
-}
-
-$removeTree = static function (string $path) use (&$removeTree): void {
-    if (! file_exists($path)) {
-        return;
-    }
-    if (is_file($path) || is_link($path)) {
-        if (! @unlink($path)) {
-            throw new RuntimeException('Unable to remove ['.$path.'].');
-        }
-        return;
-    }
-    foreach (scandir($path) ?: [] as $entry) {
-        if ($entry !== '.' && $entry !== '..') {
-            $removeTree($path.'/'.$entry);
-        }
-    }
-    if (! @rmdir($path)) {
-        throw new RuntimeException('Unable to remove ['.$path.'].');
-    }
-};
-
 $templateOnly = ['tools', 'tests/Template', 'tests/standard-checker', 'docs/package-standard.md', 'docs/verification.md'];
 foreach (['tests', 'quality', 'docs', 'docs-release', 'browser-tests', 'standard-check'] as $workflow) {
     $templateOnly[] = '.github/workflows/reusable-'.$workflow.'.yml';
@@ -244,4 +470,4 @@ try {
     $fail($exception->getMessage());
 }
 
-fwrite(STDOUT, "Package initialized as mortalkiller/{$slug}. Set the GitHub default branch to 1.x and run CI before publishing.".PHP_EOL);
+fwrite(STDOUT, "Package initialized as mortalkiller/{$slug} ({$type}). Set the GitHub default branch to 1.x and run CI before publishing.".PHP_EOL);

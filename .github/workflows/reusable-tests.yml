@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       matrix-json:
-        description: JSON strategy matrix containing php, testbench, filament, and optional dependencies entries.
+        description: JSON strategy matrix containing os, php, laravel, testbench, Filament package/constraint, and optional dependency mode entries.
         required: true
         type: string
       test-command:
@@ -18,15 +18,25 @@ permissions:
 
 jobs:
   php:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.matrix-json) }}
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - F${{ matrix.filament }} - ${{ matrix.dependencies || 'latest' }} - ${{ matrix.os || 'ubuntu-latest' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ matrix.os || 'ubuntu-latest' }}-${{ matrix.php }}-${{ matrix.laravel }}-${{ matrix.filament }}-${{ matrix.dependencies || 'latest' }}-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            composer-${{ matrix.os || 'ubuntu-latest' }}-${{ matrix.php }}-${{ matrix.laravel }}-
+            composer-${{ matrix.os || 'ubuntu-latest' }}-${{ matrix.php }}-
 
       - name: Set up PHP
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
@@ -40,15 +50,24 @@ jobs:
         run: composer validate --strict --no-check-lock
 
       - name: Resolve compatibility boundary
+        shell: bash
         env:
+          LARAVEL_CONSTRAINT: ${{ matrix.laravel }}
           TESTBENCH_CONSTRAINT: ${{ matrix.testbench }}
+          FILAMENT_PACKAGE: ${{ matrix.filament_package || 'filament/filament' }}
           FILAMENT_CONSTRAINT: ${{ matrix.filament }}
           DEPENDENCY_MODE: ${{ matrix.dependencies || 'latest' }}
           EXPECTED_FILAMENT_VERSION: ${{ matrix.expected_filament || '' }}
+          WITHOUT_STANDARD: ${{ matrix.without_standard || false }}
         run: |
           set -euo pipefail
+
+          if [[ "$WITHOUT_STANDARD" == "true" ]]; then
+            composer remove --dev mortalkiller/filament-package-standard --no-update --no-interaction
+          fi
+
+          composer require "laravel/framework:${LARAVEL_CONSTRAINT}" "${FILAMENT_PACKAGE}:${FILAMENT_CONSTRAINT}" --no-update --no-interaction
           composer require --dev "orchestra/testbench:${TESTBENCH_CONSTRAINT}" --no-update --no-interaction
-          composer require "filament/filament:${FILAMENT_CONSTRAINT}" --no-update --no-interaction
 
           case "$DEPENDENCY_MODE" in
             lowest)
@@ -63,13 +82,14 @@ jobs:
               ;;
           esac
 
-          composer show filament/filament
+          composer show laravel/framework
+          composer show "$FILAMENT_PACKAGE"
 
           if [[ -n "${EXPECTED_FILAMENT_VERSION:-}" ]]; then
-            resolved_version="$(composer show filament/filament --format=json | php -r '$data = json_decode(stream_get_contents(STDIN), true); $version = $data["versions"][0] ?? ""; echo preg_replace("/^[* ]*v?/", "", $version);')"
+            resolved_version="$(composer show "$FILAMENT_PACKAGE" --format=json | php -r '$data = json_decode(stream_get_contents(STDIN), true); $version = $data["versions"][0] ?? ""; echo preg_replace("/^[* ]*v?/", "", $version);')"
 
             if [[ "$resolved_version" != "$EXPECTED_FILAMENT_VERSION" ]]; then
-              echo "Expected Filament [$EXPECTED_FILAMENT_VERSION], resolved [$resolved_version]." >&2
+              echo "Expected Filament package [$FILAMENT_PACKAGE] version [$EXPECTED_FILAMENT_VERSION], resolved [$resolved_version]." >&2
               exit 1
             fi
           fi
@@ -80,4 +100,5 @@ jobs:
       - name: Run PHP tests
         env:
           TEST_COMMAND: ${{ inputs.test-command }}
+        shell: bash
         run: bash -lc "$TEST_COMMAND"

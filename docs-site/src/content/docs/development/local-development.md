@@ -1,16 +1,18 @@
 ---
 title: Local development
-description: Develop the package beside a consuming Filament application.
+description: Develop generated packages with optional Testbench Workbench support.
 ---
 
-Keep the package and consuming application as separate repositories. Use generic examples only:
+PHP tests use Orchestra Testbench. Select `--with-workbench` when a package benefits from an interactive representative Filament panel.
 
-```text
-projects/
-  demo-filament-app/
-  filament-package-template/
+Workbench generation adds `testbench.yaml`, a demo panel provider, Workbench autoloading, and:
+
+```bash
+composer serve
 ```
 
-A Composer path repository with `symlink: true` is the preferred local workflow for testing unreleased package changes.
+Select `--with-browser-tests` for browser-visible behavior. It implies Workbench and adds Playwright, a smoke test, and the shared browser workflow.
 
-Do not publish real customer applications, production paths, container names, SSH details or infrastructure values in this guide.
+For a separate consuming Laravel application, a Composer path repository with `symlink: true` remains the preferred workflow for unreleased package changes.
+
+Use generic examples only; never publish real customer applications, production paths, infrastructure details or credentials.

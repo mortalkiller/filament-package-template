@@ -1,0 +1,6 @@
+laravel: '@testbench'
+
+providers:
+  - MortalKiller\FilamentPackageTemplate\FilamentPackageTemplateServiceProvider
+  - Workbench\App\Providers\WorkbenchServiceProvider
+  - Workbench\App\Providers\Filament\AdminPanelProvider

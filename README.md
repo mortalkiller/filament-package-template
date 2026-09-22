@@ -2,6 +2,8 @@
 
 Canonical repository template for creating and maintaining MortalKiller Filament packages.
 
+> **Template v2:** the `2.x` line adds runtime-aware Filament package profiles, conditional scaffolding and stronger compatibility/security checks. Generated packages still start their own lifecycle on `1.x`; the template major does not determine the package major.
+
 This repository and the package standard have separate responsibilities:
 
 ```text
@@ -40,14 +42,15 @@ git checkout 1.x
 
 The initializer pins all shared workflows and tooling to an immutable template commit.
 
-In `mortalkiller/filament-package-template`, choose a full 40-character commit SHA from `1.x` for which these workflows are green:
+In `mortalkiller/filament-package-template`, choose a full 40-character commit SHA from `2.x` for which these workflows are green:
 
 - Package tests
 - Code quality
 - Documentation
 - Package standard
+- Zizmor
 
-Do not use `1.x`, `HEAD`, or another mutable reference as the workflow reference.
+Do not use `2.x`, `HEAD`, or another mutable reference as the workflow reference.
 
 ### 3. Run the initializer
 
@@ -59,19 +62,41 @@ php .template/initialize-package.php \
   --title="Filament Example" \
   --namespace='MortalKiller\FilamentExample' \
   --description="Example Filament package." \
+  --type=plugin \
   --workflow-ref=FULL_VALIDATED_TEMPLATE_COMMIT_SHA
 ```
+
+### Package profiles and capabilities
+
+The default profile is `plugin`. Available profiles are `plugin`, `theme`, `forms`, `tables`, and `library`. The first two use `filament/filament`; the others use the narrowest matching Filament package and do not generate a panel plugin class.
+
+Optional capabilities are:
+
+```text
+--with-config
+--with-database
+--with-views
+--with-translations
+--with-stubs
+--with-assets
+--with-workbench
+--with-browser-tests
+--with-rector
+```
+
+`theme` implies assets. Browser tests imply Workbench. Workbench on a partial profile adds full `filament/filament` only to development dependencies.
 
 The initializer is a one-time operation. It:
 
 - rewrites the Composer package identity;
-- updates the namespace and service provider;
+- updates the namespace, Package Tools service provider and profile-specific Filament scaffold;
 - rewrites README, documentation configuration, URLs and repository metadata;
 - converts local reusable workflows into SHA-pinned calls to this template;
 - pins package-standard and release tooling to the same validated SHA;
 - adds `mortalkiller/filament-package-standard:^1.0` to `require-dev`;
 - generates package-specific `AGENTS.md` and `CONTRIBUTING.md`;
-- removes template-only tooling and tests.
+- removes template-only tooling and tests;
+- materializes only the selected optional capabilities.
 
 See [.template/README.md](.template/README.md) for initializer-specific details.
 

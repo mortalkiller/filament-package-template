@@ -1,11 +1,41 @@
 # Initializing a new package
 
-Generate a repository from this template, start on `1.x`, and configure `1.x` as the default GitHub branch. Do not create a separate promotion branch.
+Generate a repository from template `2.x`. The generated package itself starts on `1.x`; template and package majors are independent.
 
-Run `.template/initialize-package.php` with `--slug`, `--title`, `--namespace`, `--description` and `--workflow-ref`. The workflow reference is a reviewed full 40-character commit SHA from the canonical template. Use a commit containing all reusable workflows referenced by this template, including release documentation. Do not use the generated repository's unrelated initial commit as the template reference.
+Run:
 
-The initializer changes package identity, converts relative workflow calls into SHA-pinned calls, pins the checker/publication tools with `standard-ref`, and removes template-only tooling, while generated packages consume the canonical maintainer standard from `mortalkiller/filament-package-standard`. A generated package can later add its own consumer-facing skill under `resources/boost/skills/<skill-name>/` when appropriate. It rejects invalid input and unsafe reinitialization, and can resume an interrupted initialization only when the original arguments match.
+```bash
+php .template/initialize-package.php \
+  --slug=filament-example \
+  --title="Filament Example" \
+  --namespace='MortalKiller\FilamentExample' \
+  --description="Example Filament package." \
+  --type=plugin \
+  --workflow-ref=FULL_VALIDATED_TEMPLATE_COMMIT_SHA
+```
 
-After initialization, run package CI and configure branch protection, release-tag/environment policies and deployment variables. Documentation remains unpublished until a stable release is explicitly published with deployment enabled. No secrets belong in this repository.
+The workflow ref must be a reviewed full 40-character SHA from `2.x` with successful CI. Mutable refs are rejected.
 
-Generated packages include `mortalkiller/filament-package-standard:^1.0` as a development dependency. After `composer install`, agents can read the canonical maintainer skill from `vendor/mortalkiller/filament-package-standard/resources/boost/skills/developing-filament-packages/SKILL.md`.
+Profiles: `plugin`, `theme`, `forms`, `tables`, `library`.
+
+Optional capabilities:
+
+```text
+--with-config
+--with-database
+--with-views
+--with-translations
+--with-stubs
+--with-assets
+--with-workbench
+--with-browser-tests
+--with-rector
+```
+
+`theme` implies assets and `browser-tests` implies Workbench. Partial profiles only receive full `filament/filament` in development dependencies when Workbench needs a complete demo panel.
+
+The initializer rewrites package identity, selects the runtime Filament dependency, creates the Package Tools/provider scaffold, materializes selected capabilities, pins shared workflows to the validated SHA, and removes template-only files. Interrupted initialization resumes only when the complete saved profile/capability state matches.
+
+Generated packages consume `mortalkiller/filament-package-standard:^1.0` directly in `require-dev`. That maintainer dependency currently requires PHP 8.3+, while runtime compatibility may still include PHP 8.2.
+
+After initialization, run CI and configure branch/tag protection and documentation deployment before feature work.
