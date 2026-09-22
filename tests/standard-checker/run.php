@@ -145,12 +145,20 @@ if ($publicAssetCode !== 1 || ! str_contains($publicAssetOutput, 'public_content
 
 
 $unsafeWorkflow = $makeFixture('filament-example');
+$unsafeWorkflowRef = str_repeat('a', 40);
 file_put_contents(
     $unsafeWorkflow.'/.github/workflows/docs-release.yml',
-    "name: Release docs\njobs:\n  publish:\n    uses: owner/repo/.github/workflows/reusable.yml@".str_repeat('a', 40)."\n    secrets: inherit\n",
+    <<<YAML
+name: Release docs
+jobs:
+  publish:
+    uses: owner/repo/.github/workflows/reusable.yml@{$unsafeWorkflowRef}
+    secrets: inherit
+
+YAML,
 );
 [$unsafeWorkflowCode, $unsafeWorkflowOutput] = $run($unsafeWorkflow);
-if ($unsafeWorkflowCode !== 1 || ! str_contains($unsafeWorkflowOutput, 'workflow.secrets_inherit')) {
+if ($unsafeWorkflowCode !== 1 || str_contains($unsafeWorkflowOutput, 'workflow.secrets_inherit') === false) {
     fwrite(STDERR, "Unscoped workflow secrets were not rejected:\n{$unsafeWorkflowOutput}\n");
     exit(64);
 }
