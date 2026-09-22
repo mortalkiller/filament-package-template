@@ -19,7 +19,9 @@
     "illuminate/support": "^13.0"
   },
   "require-dev": {
+    "laravel/boost": "^2.9",
     "laravel/pint": "^1.0",
+    "mortalkiller/filament-package-standard": "^1.0",
     "orchestra/testbench": "^11.0",
     "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^12.0"
