@@ -143,6 +143,18 @@ if ($publicAssetCode !== 1 || ! str_contains($publicAssetOutput, 'public_content
     exit(63);
 }
 
+
+$unsafeWorkflow = $makeFixture('filament-example');
+file_put_contents(
+    $unsafeWorkflow.'/.github/workflows/docs-release.yml',
+    "name: Release docs\njobs:\n  publish:\n    uses: owner/repo/.github/workflows/reusable.yml@".str_repeat('a', 40)."\n    secrets: inherit\n",
+);
+[$unsafeWorkflowCode, $unsafeWorkflowOutput] = $run($unsafeWorkflow);
+if ($unsafeWorkflowCode !== 1 || ! str_contains($unsafeWorkflowOutput, 'workflow.secrets_inherit')) {
+    fwrite(STDERR, "Unscoped workflow secrets were not rejected:\n{$unsafeWorkflowOutput}\n");
+    exit(64);
+}
+
 $archive = $makeFixture('filament-example');
 mkdir($archive.'/playwright-report', 0777, true);
 file_put_contents($archive.'/playwright-report/report.html', "<html></html>\n");
