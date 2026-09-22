@@ -93,7 +93,7 @@ The initializer is a one-time operation. It:
 - rewrites README, documentation configuration, URLs and repository metadata;
 - converts local reusable workflows into SHA-pinned calls to this template;
 - pins package-standard and release tooling to the same validated SHA;
-- adds `mortalkiller/filament-package-standard:^1.0` to `require-dev`;
+- adds `mortalkiller/filament-package-standard:^2.0` to `require-dev`;
 - generates package-specific `AGENTS.md` and `CONTRIBUTING.md`;
 - removes template-only tooling and tests;
 - materializes only the selected optional capabilities.
@@ -190,9 +190,9 @@ Meaningful features, significant bugs, public API changes and security-sensitive
 
 The canonical rules live in:
 
-- [Package Standard v1](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md)
-- [Development and release flow](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/development-flow.md)
-- [Release checklist](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/releasing.md)
+- [Package Standard v2](https://github.com/mortalkiller/filament-package-standard/blob/2.x/docs/package-standard.md)
+- [Development and release flow](https://github.com/mortalkiller/filament-package-standard/blob/2.x/docs/development-flow.md)
+- [Release checklist](https://github.com/mortalkiller/filament-package-standard/blob/2.x/docs/releasing.md)
 
 ## Release flow
 

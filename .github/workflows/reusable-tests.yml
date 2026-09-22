@@ -58,13 +58,9 @@ jobs:
           FILAMENT_CONSTRAINT: ${{ matrix.filament }}
           DEPENDENCY_MODE: ${{ matrix.dependencies || 'latest' }}
           EXPECTED_FILAMENT_VERSION: ${{ matrix.expected_filament || '' }}
-          WITHOUT_STANDARD: ${{ matrix.without_standard || false }}
         run: |
           set -euo pipefail
 
-          if [[ "$WITHOUT_STANDARD" == "true" ]]; then
-            composer remove --dev mortalkiller/filament-package-standard --no-update --no-interaction
-          fi
 
           composer require "laravel/framework:${LARAVEL_CONSTRAINT}" "${FILAMENT_PACKAGE}:${FILAMENT_CONSTRAINT}" --no-update --no-interaction
           composer require --dev "orchestra/testbench:${TESTBENCH_CONSTRAINT}" --no-update --no-interaction

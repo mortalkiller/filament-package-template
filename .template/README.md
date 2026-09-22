@@ -36,6 +36,6 @@ Optional capabilities:
 
 The initializer rewrites package identity, selects the runtime Filament dependency, creates the Package Tools/provider scaffold, materializes selected capabilities, pins shared workflows to the validated SHA, and removes template-only files. Interrupted initialization resumes only when the complete saved profile/capability state matches.
 
-Generated packages consume `mortalkiller/filament-package-standard:^1.0` directly in `require-dev`. That maintainer dependency currently requires PHP 8.3+, while runtime compatibility may still include PHP 8.2.
+Generated packages consume `mortalkiller/filament-package-standard:^2.0` directly in `require-dev`. Standard v2 supports PHP 8.2+, so the maintainer tooling and the template's minimum runtime boundary are aligned.
 
 After initialization, run CI and configure branch/tag protection and documentation deployment before feature work.

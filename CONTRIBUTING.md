@@ -1,8 +1,8 @@
 # Contributing
 
-Read [Package Standard v1](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md) and [Development and release flow](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/development-flow.md).
+Read [Package Standard v2](https://github.com/mortalkiller/filament-package-standard/blob/2.x/docs/package-standard.md) and [Development and release flow](https://github.com/mortalkiller/filament-package-standard/blob/2.x/docs/development-flow.md).
 
-Create a focused temporary branch from the affected package major (`1.x` for this template) and open a PR to that same major. The major-only flow has no separate stable-promotion branch. Use an issue and acceptance criteria for meaningful changes, preserve existing compatibility boundaries, and include tests and documentation. Squash temporary work after review and successful CI.
+Create a focused temporary branch from the affected package major (`2.x` for this template) and open a PR to that same major. The major-only flow has no separate stable-promotion branch. Use an issue and acceptance criteria for meaningful changes, preserve existing compatibility boundaries, and include tests and documentation. Squash temporary work after review and successful CI.
 
 Run Composer validation, PHP tests, Pint, tracked syntax checks, the package-standard checker, the docs build, and `node --test tools/tests/*.test.mjs` for shared release tooling. Test the initializer and its partial-initialization safety. Do not publish secrets, private applications, customer data or infrastructure in examples or verification logs.
 

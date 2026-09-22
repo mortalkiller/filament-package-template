@@ -1,9 +1,9 @@
 # Agent instructions
 
-This repository follows MortalKiller Filament Package Standard v1.
+This repository follows MortalKiller Filament Package Standard v2.
 
-Canonical standard: https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md
-Canonical skill: https://github.com/mortalkiller/filament-package-standard/blob/1.x/resources/boost/skills/developing-filament-packages/SKILL.md
+Canonical standard: https://github.com/mortalkiller/filament-package-standard/blob/2.x/docs/package-standard.md
+Canonical skill: https://github.com/mortalkiller/filament-package-standard/blob/2.x/resources/boost/skills/developing-filament-packages/SKILL.md
 
 Read the canonical standard and skill before package-template work. Permanent branches are major lines; temporary branches and PRs target the affected major. Releases are immutable tags on verified major commits, without a promotion branch.
 
