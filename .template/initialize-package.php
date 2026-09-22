@@ -245,6 +245,7 @@ $replace = [
 ];
 foreach (['tests', 'quality', 'docs', 'docs-release', 'browser-tests', 'standard-check'] as $workflow) {
     $name = 'reusable-'.$workflow.'.yml';
+    $replace['$/.github/workflows/'.$name] = 'mortalkiller/filament-package-template/.github/workflows/'.$name.'@'.$workflowRef;
     $replace['./.github/workflows/'.$name] = 'mortalkiller/filament-package-template/.github/workflows/'.$name.'@'.$workflowRef;
 }
 

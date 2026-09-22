@@ -10,7 +10,7 @@ export function checkMajorFlow(root) {
     const content = readFileSync(`${directory}/${name}`, 'utf8');
     for (const match of content.matchAll(/^\s*(?:-\s*)?uses:\s*([^\s#]+).*$/gm)) {
       const reference = match[1];
-      if (!reference.startsWith('./') && !/@[a-f0-9]{40}$/.test(reference)) errors.push(`${name}: external uses must be pinned by a full commit SHA.`);
+      if (!reference.startsWith('./') && !reference.startsWith('$/') && !/@[a-f0-9]{40}$/.test(reference)) errors.push(`${name}: external uses must be pinned by a full commit SHA.`);
     }
     if (/refs\/heads\/main|^\s*-\s*['"]?main['"]?\s*$/m.test(content)) errors.push(`${name}: the major-only flow must not depend on the old promotion branch.`);
   }

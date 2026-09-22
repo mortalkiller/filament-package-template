@@ -21,6 +21,7 @@ function fixture(overrides = {}) {
 }
 for (const [name, overrides, expected] of [
   ['valid versioned workflows', {}, 0],
+  ['dedicated self-repository references', { '.github/workflows/tests.yml': 'jobs:\n  tests:\n    uses: $/.github/workflows/reusable-tests.yml\n' }, 0],
   ['mutable external references', { '.github/workflows/tests.yml': 'jobs:\n  tests:\n    uses: owner/repo/.github/workflows/tests.yml@1.x\n' }, 1],
   ['obsolete promotion-branch triggers', { '.github/workflows/tests.yml': 'on:\n  push:\n    branches:\n      - main\n' }, 1],
   ['publication from a push', { '.github/workflows/docs-release.yml': 'on:\n  push:\n' }, 1],
