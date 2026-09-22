@@ -9,3 +9,13 @@ Run Composer validation, PHP tests, Pint, tracked syntax checks, the package-sta
 External reusable workflows and their supporting tools must be pinned to the same validated full commit SHA. Keep older consumer contracts compatible during a rollout. Releases use immutable `vX.Y.Z` tags from verified commits on `X.x`; publishing a stable GitHub Release, not pushing a branch, publishes documentation. Never move existing tags.
 
 Report vulnerabilities through GitHub private vulnerability reporting as described in [SECURITY.md](SECURITY.md).
+
+## Agent skill
+
+The repository includes `laravel/boost` and `mortalkiller/filament-package-standard` as development dependencies. After `composer install` or after updating either package, synchronize the canonical maintainer skill with:
+
+```bash
+vendor/bin/testbench boost:update
+```
+
+Laravel Boost discovers `developing-filament-packages` from the direct `mortalkiller/filament-package-standard` dependency.
