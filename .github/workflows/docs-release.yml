@@ -21,7 +21,7 @@ permissions:
 jobs:
   publish:
     if: github.event_name == 'workflow_dispatch' || (github.event.release.draft == false && github.event.release.prerelease == false && vars.DOCS_DEPLOY_ENABLED == 'true')
-    uses: ./.github/workflows/reusable-docs-release.yml
+    uses: $/.github/workflows/reusable-docs-release.yml
     with:
       standard-ref: ${{ github.sha }}
       artifact-name: filament-package-template-release-docs

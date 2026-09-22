@@ -167,6 +167,23 @@ if ($unsafeWorkflowCode !== 1 || str_contains($unsafeWorkflowOutput, 'workflow.s
     exit(64);
 }
 
+$legacySelfRepository = $makeFixture('filament-example');
+file_put_contents(
+    $legacySelfRepository.'/.github/workflows/docs.yml',
+    <<<'YAML'
+name: Docs
+jobs:
+  docs:
+    uses: ./.github/workflows/reusable-docs.yml
+
+YAML,
+);
+[$legacySelfRepositoryCode, $legacySelfRepositoryOutput] = $run($legacySelfRepository);
+if ($legacySelfRepositoryCode !== 1 || str_contains($legacySelfRepositoryOutput, 'workflow.self_repository') === false) {
+    fwrite(STDERR, "Legacy self-repository workflow reference was not rejected:\n{$legacySelfRepositoryOutput}\n");
+    exit(65);
+}
+
 $archive = $makeFixture('filament-example');
 mkdir($archive.'/playwright-report', 0777, true);
 file_put_contents($archive.'/playwright-report/report.html', "<html></html>\n");

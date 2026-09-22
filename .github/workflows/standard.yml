@@ -15,6 +15,6 @@ concurrency:
 
 jobs:
   standard:
-    uses: ./.github/workflows/reusable-standard-check.yml
+    uses: $/.github/workflows/reusable-standard-check.yml
     with:
       standard-ref: ${{ github.sha }}
