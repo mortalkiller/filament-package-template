@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   docs:
-    uses: ./.github/workflows/reusable-docs.yml
+    uses: $/.github/workflows/reusable-docs.yml
     with:
       artifact-name: filament-package-template-docs
       deploy: false

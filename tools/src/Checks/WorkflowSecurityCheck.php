@@ -20,7 +20,8 @@ final class WorkflowSecurityCheck
             return;
         }
 
-        $unsafe = [];
+        $unsafeSecrets = [];
+        $legacySelfRepository = [];
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
@@ -34,21 +35,37 @@ final class WorkflowSecurityCheck
 
             $content = file_get_contents($file->getPathname());
 
-            if (! is_string($content) || ! preg_match('/^\s*secrets:\s*inherit\s*$/m', $content)) {
+            if (! is_string($content)) {
                 continue;
             }
 
             $relative = ltrim(str_replace($root, '', $file->getPathname()), DIRECTORY_SEPARATOR);
-            $unsafe[] = $relative;
-            $result->fail(
-                'workflow.secrets_inherit',
-                'Reusable workflows must receive only the secrets they require. Do not use unconditional secrets: inherit.',
-                $relative,
-            );
+
+            if (preg_match('/^\s*secrets:\s*inherit\s*$/m', $content)) {
+                $unsafeSecrets[] = $relative;
+                $result->fail(
+                    'workflow.secrets_inherit',
+                    'Reusable workflows must receive only the secrets they require. Do not use unconditional secrets: inherit.',
+                    $relative,
+                );
+            }
+
+            if (preg_match('/^\s*uses:\s+\.\//m', $content)) {
+                $legacySelfRepository[] = $relative;
+                $result->fail(
+                    'workflow.self_repository',
+                    'Use GitHub self-repository syntax ($/...) instead of workspace-relative uses: ./... references.',
+                    $relative,
+                );
+            }
         }
 
-        if ($unsafe === []) {
+        if ($unsafeSecrets === []) {
             $result->pass('workflow.secret_scope', 'GitHub Actions workflows do not unconditionally inherit caller secrets.');
+        }
+
+        if ($legacySelfRepository === []) {
+            $result->pass('workflow.self_repository', 'GitHub Actions use dedicated self-repository syntax for in-repository actions and workflows.');
         }
     }
 }

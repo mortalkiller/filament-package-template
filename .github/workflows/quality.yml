@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   quality:
-    uses: ./.github/workflows/reusable-quality.yml
+    uses: $/.github/workflows/reusable-quality.yml
     with:
       php-version: '8.4'
       static-analysis: true
