@@ -1,6 +1,6 @@
 # Filament Package Template
 
-[![Package tests](https://github.com/mortalkiller/filament-package-template/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/mortalkiller/filament-package-template/actions/workflows/tests.yml)
+[![Package tests](https://github.com/mortalkiller/filament-package-template/actions/workflows/tests.yml/badge.svg?branch=1.x)](https://github.com/mortalkiller/filament-package-template/actions/workflows/tests.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
 [![Scanned by Plumb](https://plumbphp.dev/badges/mortalkiller/filament-package-template/scanned.svg)](https://plumbphp.dev/mortalkiller/filament-package-template)
