@@ -212,7 +212,7 @@ if ($partialCode !== 0 || file_exists($partial.'/.template')) {
 }
 $mismatch = $fixture();
 file_put_contents($mismatch.'/.template/.initializing.json', json_encode($state, JSON_THROW_ON_ERROR));
-[$mismatchCode, $mismatchOutput] = $run($mismatch, $base + ['slug' => 'filament-different']);
+[$mismatchCode, $mismatchOutput] = $run($mismatch, array_replace($base, ['slug' => 'filament-different']));
 if ($mismatchCode === 0 || ! str_contains($mismatchOutput, 'Initialization is already in progress with different arguments.')) {
     $fail('Mismatched partial initialization was not rejected safely.');
 }
@@ -222,7 +222,7 @@ if ($invalidCode === 0 || ! str_contains($invalidOutput, 'The --type value must 
     $fail('Invalid package profile was accepted.');
 }
 $mutable = $fixture();
-[$refCode] = $run($mutable, $base + ['workflow_ref' => '2.x']);
+[$refCode] = $run($mutable, array_replace($base, ['workflow_ref' => '2.x']));
 if ($refCode === 0) {
     $fail('Mutable workflow reference was accepted.');
 }
