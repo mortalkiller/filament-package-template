@@ -17,6 +17,8 @@ function fixture(partial = false) {
   put('composer.json', JSON.stringify({ name: 'mortalkiller/filament-package-template' }));
   put('src/FilamentPackageTemplateServiceProvider.php', '<?php namespace MortalKiller\\FilamentPackageTemplate;');
   cpSync(join(source, '.github/workflows'), join(root, '.github/workflows'), { recursive: true });
+  cpSync(join(source, 'docs-site/src/components'), join(root, 'docs-site/src/components'), { recursive: true });
+  cpSync(join(source, 'docs-site/src/styles'), join(root, 'docs-site/src/styles'), { recursive: true });
   if (partial) {
     put('.template/.initializing.json', JSON.stringify(state));
     put('.github/workflows/tests.yml', `jobs:\n  tests:\n    uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@${sha}\n`);
@@ -56,5 +58,19 @@ test('resuming initialization does not rewrite canonical workflow ownership', ()
     initialize(root);
     const content = readFileSync(join(root, '.github/workflows/tests.yml'), 'utf8');
     assert.ok(content.includes(`mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@${sha}`));
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+test('initialized documentation preserves the themed selector and rewrites its manifest root', () => {
+  const root = fixture();
+  try {
+    initialize(root);
+    const component = readFileSync(join(root, 'docs-site/src/components/VersionedSiteTitle.astro'), 'utf8');
+    const css = readFileSync(join(root, 'docs-site/src/styles/custom.css'), 'utf8');
+    assert.ok(component.includes("const root = '/filament-example';"));
+    assert.ok(component.includes('class="docs-version-select"'));
+    assert.ok(component.includes('data-docs-root={root}'));
+    assert.ok(!component.includes('filament-package-template'));
+    assert.equal(css, readFileSync(join(source, 'docs-site/src/styles/custom.css'), 'utf8'));
+    assert.ok(css.includes('.docs-version-select:focus-visible'));
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
