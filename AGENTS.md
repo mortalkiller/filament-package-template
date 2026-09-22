@@ -9,4 +9,4 @@ Read the canonical standard and skill before package-template work. Permanent br
 
 Run the required CI-equivalent checks and audit public content for private consumer, customer, infrastructure and credential information. Do not claim a release or live documentation deployment was verified when only fixtures or a build ran.
 
-For package development, install dev dependencies and run `vendor/bin/testbench boost:update` to discover and synchronize the canonical `developing-filament-packages` skill through Laravel Boost.
+After `composer install`, read and use `vendor/mortalkiller/filament-package-standard/resources/boost/skills/developing-filament-packages/SKILL.md`. If dependencies are not installed, use the canonical skill URL above.
