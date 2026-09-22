@@ -143,7 +143,6 @@ if ($publicAssetCode !== 1 || str_contains($publicAssetOutput, 'public_content.s
     exit(63);
 }
 
-
 $unsafeWorkflow = $makeFixture('filament-example');
 $unsafeWorkflowRef = str_repeat('a', 40);
 $unsafeWorkflowContent = str_replace(
