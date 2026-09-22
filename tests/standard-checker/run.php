@@ -167,7 +167,6 @@ if ($unsafeWorkflowCode !== 1 || str_contains($unsafeWorkflowOutput, 'workflow.s
     exit(64);
 }
 
-
 $legacySelfRepository = $makeFixture('filament-example');
 file_put_contents(
     $legacySelfRepository.'/.github/workflows/docs.yml',
