@@ -317,7 +317,7 @@ try {
         unset($generatedComposer['require'][$filamentPackage]);
     }
     $generatedComposer['require'][$runtimePackage] = '^5.8.1';
-    $generatedComposer['require-dev']['mortalkiller/filament-package-standard'] = '^1.0';
+    $generatedComposer['require-dev']['mortalkiller/filament-package-standard'] = '^2.0';
 
     if ($capabilities['workbench'] && $runtimePackage !== 'filament/filament') {
         $generatedComposer['require-dev']['filament/filament'] = '^5.8.1';
@@ -428,11 +428,11 @@ YAML;
 $agentInstructions = <<<'MARKDOWN'
 # Agent instructions
 
-This repository follows MortalKiller Filament Package Standard v1.
+This repository follows MortalKiller Filament Package Standard v2.
 
-Canonical standard: https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md
+Canonical standard: https://github.com/mortalkiller/filament-package-standard/blob/2.x/docs/package-standard.md
 Installed maintainer skill: `vendor/mortalkiller/filament-package-standard/resources/boost/skills/developing-filament-packages/SKILL.md`
-Canonical skill fallback: https://github.com/mortalkiller/filament-package-standard/blob/1.x/resources/boost/skills/developing-filament-packages/SKILL.md
+Canonical skill fallback: https://github.com/mortalkiller/filament-package-standard/blob/2.x/resources/boost/skills/developing-filament-packages/SKILL.md
 
 After `composer install`, read and use the installed `developing-filament-packages` skill. If dependencies are not installed, use the canonical skill fallback. Read `docs/development-flow.md` and the canonical standard. Work on temporary branches targeting the affected major. Publish immutable tags on verified major commits; do not introduce a stable-promotion branch.
 
@@ -441,7 +441,7 @@ MARKDOWN;
 $contributing = <<<'MARKDOWN'
 # Contributing
 
-Read [Development and release flow](docs/development-flow.md) and the [canonical package standard](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md).
+Read [Development and release flow](docs/development-flow.md) and the [canonical package standard](https://github.com/mortalkiller/filament-package-standard/blob/2.x/docs/package-standard.md).
 
 After `composer install`, the maintainer skill is available at `vendor/mortalkiller/filament-package-standard/resources/boost/skills/developing-filament-packages/SKILL.md`.
 

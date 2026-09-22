@@ -94,7 +94,7 @@ $assertContains($tmp, 'https://docs.pedromonteiro.dev/filament-example/', 'READM
 $assertContains($tmp, 'uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@'.$workflowRef, '.github/workflows/tests.yml');
 $assertContains($tmp, 'standard-ref: '.$workflowRef, '.github/workflows/standard.yml');
 $assertContains($tmp, 'standard-ref: '.$workflowRef, '.github/workflows/docs-release.yml');
-$assertContains($tmp, 'mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md', 'AGENTS.md');
+$assertContains($tmp, 'mortalkiller/filament-package-standard/blob/2.x/docs/package-standard.md', 'AGENTS.md');
 $assertExists($tmp, 'src/FilamentExampleServiceProvider.php');
 $assertExists($tmp, 'src/FilamentExamplePlugin.php');
 $assertExists($tmp, 'tests/Unit/PluginTest.php');
@@ -104,8 +104,8 @@ $composer = json_decode((string) file_get_contents($tmp.'/composer.json'), true,
 if (($composer['require']['filament/filament'] ?? null) !== '^5.8.1') {
     $fail('Default plugin profile has the wrong Filament runtime dependency.');
 }
-if (($composer['require-dev']['mortalkiller/filament-package-standard'] ?? null) !== '^1.0') {
-    $fail('Generated package is missing filament-package-standard ^1.0 in require-dev.');
+if (($composer['require-dev']['mortalkiller/filament-package-standard'] ?? null) !== '^2.0') {
+    $fail('Generated package is missing filament-package-standard ^2.0 in require-dev.');
 }
 if (isset($composer['require-dev']['rector/rector'])) {
     $fail('Rector leaked into the default generated package.');
