@@ -8,4 +8,4 @@ The initializer changes package identity, converts relative workflow calls into 
 
 After initialization, run package CI and configure branch protection, release-tag/environment policies and deployment variables. Documentation remains unpublished until a stable release is explicitly published with deployment enabled. No secrets belong in this repository.
 
-Generated packages include `laravel/boost:^2.9` and `mortalkiller/filament-package-standard:^1.0` as development dependencies. After `composer install`, run `vendor/bin/testbench boost:update` to discover and synchronize the canonical maintainer skill.
+Generated packages include `mortalkiller/filament-package-standard:^1.0` as a development dependency. After `composer install`, agents can read the canonical maintainer skill from `vendor/mortalkiller/filament-package-standard/resources/boost/skills/developing-filament-packages/SKILL.md`.
