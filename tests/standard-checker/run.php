@@ -5,7 +5,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__, 2);
 $checker = $root.'/tools/package-standard-check.php';
 
-if (! is_file($checker)) {
+if (is_file($checker) === false) {
     fwrite(STDERR, "standard checker missing\n");
     exit(1);
 }
@@ -77,14 +77,14 @@ $run = static function (string $path, bool $json = false) use ($checker): array 
 
 $valid = $makeFixture('filament-example');
 [$validCode, $validOutput] = $run($valid);
-if ($validCode !== 0 || ! str_contains($validOutput, 'FAIL 0')) {
+if ($validCode !== 0 || str_contains($validOutput, 'FAIL 0') === false) {
     fwrite(STDERR, "Valid fixture failed:\n{$validOutput}\n");
     exit(2);
 }
 
 $badOwner = $makeFixture('filament-example', ['composer_name' => 'someone/filament-example']);
 [$ownerCode, $ownerOutput] = $run($badOwner);
-if ($ownerCode !== 1 || ! str_contains($ownerOutput, 'composer.package_owner')) {
+if ($ownerCode !== 1 || str_contains($ownerOutput, 'composer.package_owner') === false) {
     fwrite(STDERR, "Wrong-owner fixture did not fail correctly:\n{$ownerOutput}\n");
     exit(3);
 }
@@ -93,7 +93,7 @@ $badDocs = $makeFixture('filament-example', [
     'astro' => "site: 'https://docs.pedromonteiro.dev'; const basePath = '/wrong'; const repositoryUrl = 'https://github.com/mortalkiller/filament-example'; const personal = 'https://pedromonteiro.dev';\n",
 ]);
 [$docsCode, $docsOutput] = $run($badDocs);
-if ($docsCode !== 1 || ! str_contains($docsOutput, 'docs.base_path')) {
+if ($docsCode !== 1 || str_contains($docsOutput, 'docs.base_path') === false) {
     fwrite(STDERR, "Wrong-base fixture did not fail correctly:\n{$docsOutput}\n");
     exit(4);
 }
@@ -102,7 +102,7 @@ $secret = $makeFixture('filament-example', [
     'readme_append' => "\n-----BEGIN OPENSSH PRIVATE KEY-----\nsynthetic-test-value\n",
 ]);
 [$secretCode, $secretOutput] = $run($secret);
-if ($secretCode !== 1 || ! str_contains($secretOutput, 'public_content.sensitive_pattern')) {
+if ($secretCode !== 1 || str_contains($secretOutput, 'public_content.sensitive_pattern') === false) {
     fwrite(STDERR, "Sensitive-content fixture did not fail correctly:\n{$secretOutput}\n");
     exit(5);
 }
@@ -120,7 +120,7 @@ $hostPath = $makeFixture('filament-example', [
     'readme_append' => "\n/opt/example-company/internal/app\n",
 ]);
 [$hostPathCode, $hostPathOutput] = $run($hostPath);
-if ($hostPathCode !== 1 || ! str_contains($hostPathOutput, 'public_content.sensitive_pattern')) {
+if ($hostPathCode !== 1 || str_contains($hostPathOutput, 'public_content.sensitive_pattern') === false) {
     fwrite(STDERR, "Generic host-path fixture did not fail correctly:\n{$hostPathOutput}\n");
     exit(61);
 }
@@ -129,7 +129,7 @@ $ssh = $makeFixture('filament-example', [
     'readme_append' => "\nssh -p 2222 -i ~/.ssh/deploy_key deploy@203.0.113.10\n",
 ]);
 [$sshCode, $sshOutput] = $run($ssh);
-if ($sshCode !== 1 || ! str_contains($sshOutput, 'public_content.sensitive_pattern')) {
+if ($sshCode !== 1 || str_contains($sshOutput, 'public_content.sensitive_pattern') === false) {
     fwrite(STDERR, "Literal SSH infrastructure fixture did not fail correctly:\n{$sshOutput}\n");
     exit(62);
 }
@@ -138,7 +138,7 @@ $publicAsset = $makeFixture('filament-example');
 mkdir($publicAsset.'/docs-site/public', 0777, true);
 file_put_contents($publicAsset.'/docs-site/public/deploy.txt', "sk_live_1234567890abcdef\n");
 [$publicAssetCode, $publicAssetOutput] = $run($publicAsset);
-if ($publicAssetCode !== 1 || ! str_contains($publicAssetOutput, 'public_content.sensitive_pattern')) {
+if ($publicAssetCode !== 1 || str_contains($publicAssetOutput, 'public_content.sensitive_pattern') === false) {
     fwrite(STDERR, "Public docs asset fixture did not fail correctly:\n{$publicAssetOutput}\n");
     exit(63);
 }
@@ -163,7 +163,7 @@ file_put_contents(
     $unsafeWorkflowContent,
 );
 [$unsafeWorkflowCode, $unsafeWorkflowOutput] = $run($unsafeWorkflow);
-if ($unsafeWorkflowCode !== 1 || ! str_contains($unsafeWorkflowOutput, 'workflow.secrets_inherit')) {
+if ($unsafeWorkflowCode !== 1 || str_contains($unsafeWorkflowOutput, 'workflow.secrets_inherit') === false) {
     fwrite(STDERR, "Unscoped workflow secrets were not rejected:\n{$unsafeWorkflowOutput}\n");
     exit(64);
 }
@@ -174,7 +174,7 @@ file_put_contents($archive.'/playwright-report/report.html', "<html></html>\n");
 exec('git -C '.escapeshellarg($archive).' add playwright-report/report.html');
 exec('git -C '.escapeshellarg($archive).' commit -qm forbidden');
 [$archiveCode, $archiveOutput] = $run($archive);
-if ($archiveCode !== 1 || ! str_contains($archiveOutput, 'distribution.development_path')) {
+if ($archiveCode !== 1 || str_contains($archiveOutput, 'distribution.development_path') === false) {
     fwrite(STDERR, "Distribution fixture did not fail correctly:\n{$archiveOutput}\n");
     exit(7);
 }
@@ -194,7 +194,7 @@ if ($worktreeCommandCode !== 0) {
 if (
     $worktreeCode !== 0
     || str_contains($worktreeOutput, 'distribution.git_unavailable')
-    || ! str_contains($worktreeOutput, 'distribution.clean')
+    || str_contains($worktreeOutput, 'distribution.clean') === false
 ) {
     fwrite(STDERR, "Worktree distribution fixture did not validate correctly:\n{$worktreeOutput}\n");
     exit(72);
@@ -202,7 +202,7 @@ if (
 
 [$jsonCode, $jsonOutput] = $run($valid, true);
 $json = json_decode($jsonOutput, true);
-if ($jsonCode !== 0 || ! is_array($json) || ($json['summary']['fail'] ?? null) !== 0) {
+if ($jsonCode !== 0 || is_array($json) === false || ($json['summary']['fail'] ?? null) !== 0) {
     fwrite(STDERR, "JSON output is invalid:\n{$jsonOutput}\n");
     exit(8);
 }
