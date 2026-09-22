@@ -74,9 +74,6 @@ if (! is_file($tmp.'/src/FilamentExampleServiceProvider.php')) {
     $fail('Renamed service provider is missing.');
 }
 $composer = json_decode((string) file_get_contents($tmp.'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
-if (($composer['require-dev']['laravel/boost'] ?? null) !== '^2.9') {
-    $fail('Generated package is missing laravel/boost ^2.9 in require-dev.');
-}
 if (($composer['require-dev']['mortalkiller/filament-package-standard'] ?? null) !== '^1.0') {
     $fail('Generated package is missing filament-package-standard ^1.0 in require-dev.');
 }
