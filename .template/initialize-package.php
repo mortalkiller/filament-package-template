@@ -309,11 +309,14 @@ if ($hasPanelPlugin) {
 try {
     $generatedComposer = json_decode((string) file_get_contents($composerPath), true, flags: JSON_THROW_ON_ERROR);
     $generatedComposer['require'] ??= [];
+    $generatedComposer['require-dev'] ??= [];
+    $generatedComposer['autoload-dev'] ??= [];
+    $generatedComposer['autoload-dev']['psr-4'] ??= [];
+    $generatedComposer['scripts'] ??= [];
     foreach (['filament/filament', 'filament/forms', 'filament/tables', 'filament/support'] as $filamentPackage) {
         unset($generatedComposer['require'][$filamentPackage]);
     }
     $generatedComposer['require'][$runtimePackage] = '^5.8.1';
-    $generatedComposer['require-dev'] ??= [];
     $generatedComposer['require-dev']['mortalkiller/filament-package-standard'] = '^1.0';
 
     if ($capabilities['workbench'] && $runtimePackage !== 'filament/filament') {

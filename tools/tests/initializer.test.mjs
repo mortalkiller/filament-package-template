@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
 
 const source = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const sha = 'a'.repeat(40);
-const state = { slug: 'filament-example', title: 'Filament Example', namespace: 'MortalKiller\\FilamentExample', description: 'Example Filament package.', workflow_ref: sha };
+const initArgs = { slug: 'filament-example', title: 'Filament Example', namespace: 'MortalKiller\\FilamentExample', description: 'Example Filament package.' };
+const state = { ...initArgs, workflow_ref: sha, type: 'plugin', capabilities: [] };
 function fixture(partial = false) {
   const root = mkdtempSync(join(tmpdir(), 'major-init-'));
   const put = (name, content) => { mkdirSync(resolve(root, name, '..'), { recursive: true }); writeFileSync(join(root, name), content); };
@@ -26,7 +27,7 @@ function fixture(partial = false) {
   return root;
 }
 function initialize(root, ref = sha) {
-  const args = Object.entries(state).filter(([key]) => key !== 'workflow_ref').map(([key, value]) => `--${key}=${value}`);
+  const args = Object.entries(initArgs).map(([key, value]) => `--${key}=${value}`);
   return execFileSync('php', [join(root, '.template/initialize-package.php'), ...args, `--workflow-ref=${ref}`], { env: { ...process.env, PACKAGE_TEMPLATE_ROOT: root }, encoding: 'utf8', stdio: 'pipe' });
 }
 test('new packages pin both external workflows and tooling to the requested SHA', () => {
