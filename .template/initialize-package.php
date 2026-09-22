@@ -157,14 +157,32 @@ foreach ($writes as $write) {
     }
 }
 
+try {
+    $generatedComposer = json_decode((string) file_get_contents($composerPath), true, flags: JSON_THROW_ON_ERROR);
+    $generatedComposer['require-dev'] ??= [];
+    $generatedComposer['require-dev']['mortalkiller/filament-package-standard'] = '^1.0';
+    ksort($generatedComposer['require-dev']);
+    $generatedComposerContent = json_encode(
+        $generatedComposer,
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR,
+    ).PHP_EOL;
+} catch (Throwable) {
+    $fail('Unable to configure the package standard development dependency.');
+}
+if (file_put_contents($composerPath, $generatedComposerContent) === false) {
+    $fail('Unable to write composer.json.');
+}
+
 $agentInstructions = <<<'MARKDOWN'
 # Agent instructions
 
 This repository follows MortalKiller Filament Package Standard v1.
 
 Canonical standard: https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md
+Installed maintainer skill: `vendor/mortalkiller/filament-package-standard/resources/boost/skills/developing-filament-packages/SKILL.md`
+Canonical skill fallback: https://github.com/mortalkiller/filament-package-standard/blob/1.x/resources/boost/skills/developing-filament-packages/SKILL.md
 
-Read `docs/development-flow.md` and the canonical standard. When the `developing-filament-packages` skill is available in your configured agent, use it. Work on temporary branches targeting the affected major. Publish immutable tags on verified major commits; do not introduce a stable-promotion branch.
+After `composer install`, read and use the installed `developing-filament-packages` skill. If dependencies are not installed, use the canonical skill fallback. Read `docs/development-flow.md` and the canonical standard. Work on temporary branches targeting the affected major. Publish immutable tags on verified major commits; do not introduce a stable-promotion branch.
 
 Before completion, run required CI-equivalent checks and audit public content for private customer, consumer, infrastructure and credential information. Distinguish code/build verification from an actual release or live documentation deployment.
 MARKDOWN;
@@ -172,6 +190,8 @@ $contributing = <<<'MARKDOWN'
 # Contributing
 
 Read [Development and release flow](docs/development-flow.md) and the [canonical package standard](https://github.com/mortalkiller/filament-package-standard/blob/1.x/docs/package-standard.md).
+
+After `composer install`, the maintainer skill is available at `vendor/mortalkiller/filament-package-standard/resources/boost/skills/developing-filament-packages/SKILL.md`.
 
 Create a focused temporary branch from the affected major and open a PR to that same major. Include an issue and acceptance criteria for meaningful changes, preserve backwards compatibility, and update tests and source-derived documentation. Squash temporary branches after review and successful CI.
 
