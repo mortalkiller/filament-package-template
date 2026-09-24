@@ -18,15 +18,6 @@ on:
       docs-directory:
         type: string
         default: docs-site
-      docs-port:
-        type: string
-        default: '22'
-      docs-remote-path:
-        type: string
-        default: ''
-      environment-name:
-        type: string
-        default: docs-production
 
 permissions:
   contents: read
@@ -64,8 +55,8 @@ jobs:
               assert name == 'workflow_dispatch', 'Unsupported publication event.'
               tag = os.environ['REQUESTED_TAG']
               if os.environ['DRY_RUN'] != 'true':
-                  assert re.fullmatch(r'refs/heads/(0|[1-9][0-9]*)\.x', os.environ['GITHUB_REF']), 'Manual publication must run from a major branch.'
-          assert re.fullmatch(r'v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)', tag), 'A stable vX.Y.Z tag is required.'
+                  assert re.fullmatch(r'refs/heads/(0|[1-9][0-9]*)\\.x', os.environ['GITHUB_REF']), 'Manual publication must run from a major branch.'
+          assert re.fullmatch(r'v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)', tag), 'A stable vX.Y.Z tag is required.'
           assert re.fullmatch(r'[a-f0-9]{40}', os.environ['STANDARD_REF']), 'The tooling reference must be a full commit SHA.'
           if os.environ['DRY_RUN'] != 'true':
               assert os.environ['DEPLOY_ENABLED'] == 'true', 'Documentation deployment is disabled.'
@@ -86,9 +77,10 @@ jobs:
           path: .mortal-package-standard
           persist-credentials: false
       - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '22.20.0'
+          package-manager-cache: false
       - name: Verify release, major ancestry and exact-commit CI
         id: plan
         env:
@@ -130,51 +122,3 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
-
-  deploy:
-    name: Publish versioned documentation
-    needs: build
-    if: needs.build.outputs.publish == 'true' && !inputs.dry-run
-    runs-on: ubuntu-latest
-    environment: ${{ inputs.environment-name }}
-    steps:
-      - name: Checkout pinned publication tooling
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          repository: mortalkiller/filament-package-template
-          ref: ${{ inputs.standard-ref }}
-          path: .mortal-package-standard
-          persist-credentials: false
-      - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '22.20.0'
-      - name: Download verified artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-        with:
-          name: ${{ inputs.artifact-name }}
-          path: .docs-release
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.DOCS_SSH_PRIVATE_KEY }}
-          SSH_KNOWN_HOSTS: ${{ secrets.DOCS_SSH_KNOWN_HOSTS }}
-        run: |
-          test -n "$SSH_PRIVATE_KEY"
-          test -n "$SSH_KNOWN_HOSTS"
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-      - name: Publish without downgrading or deleting other major versions
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.build.outputs.tag }}
-          DOCS_HOST: ${{ secrets.DOCS_HOST }}
-          DOCS_USER: ${{ secrets.DOCS_USER }}
-          DOCS_PORT: ${{ inputs.docs-port }}
-          DOCS_REMOTE_PATH: ${{ inputs.docs-remote-path }}
-        run: node .mortal-package-standard/tools/docs-release.mjs publish
-      - name: Remove the deployment key
-        if: always()
-        run: rm -f ~/.ssh/id_ed25519
