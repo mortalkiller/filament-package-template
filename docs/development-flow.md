@@ -29,6 +29,8 @@ Fix the oldest supported affected major first and forward-port the relevant chan
 
 PRs and pushes build and validate documentation but never deploy stable docs. Stable GitHub Releases publish documentation from the exact tag after major-ancestry and exact-commit CI verification.
 
+Release verification and artifact building may use the shared reusable workflow, but the job that enters `docs-production` and reads `DOCS_*` secrets must be defined in the consuming package repository. Do not use `secrets: inherit` to bridge deployment credentials into a cross-repository reusable workflow.
+
 The canonical `https://docs.pedromonteiro.dev/<package>/` URL remains **Latest**. `/<package>/N.x/` contains the latest published documentation for that package major. Older majors, prereleases and stale reruns must not replace newer stable documentation.
 
 ## Repository setup and migration
