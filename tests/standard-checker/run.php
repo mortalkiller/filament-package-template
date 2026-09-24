@@ -184,6 +184,48 @@ if ($legacySelfRepositoryCode !== 1 || str_contains($legacySelfRepositoryOutput,
     exit(65);
 }
 
+$missingLocalDocsDeployment = $makeFixture('filament-example');
+file_put_contents(
+    $missingLocalDocsDeployment.'/.github/workflows/docs-release.yml',
+    <<<'YAML'
+name: Release docs
+jobs:
+  publish:
+    uses: owner/repo/.github/workflows/reusable-docs-release.yml@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+YAML,
+);
+[$missingLocalDocsDeploymentCode, $missingLocalDocsDeploymentOutput] = $run($missingLocalDocsDeployment);
+if (
+    $missingLocalDocsDeploymentCode !== 1
+    || str_contains($missingLocalDocsDeploymentOutput, 'workflow.docs_release_local_deployment') === false
+) {
+    fwrite(STDERR, "Missing local docs deployment boundary was not rejected:\n{$missingLocalDocsDeploymentOutput}\n");
+    exit(66);
+}
+
+$reusableDocsDeployment = $makeFixture('filament-example');
+file_put_contents(
+    $reusableDocsDeployment.'/.github/workflows/reusable-docs-release.yml',
+    <<<'YAML'
+name: Reusable release docs
+jobs:
+  deploy:
+    environment: docs-production
+    steps:
+      - run: echo "${{ secrets.DOCS_HOST }}"
+
+YAML,
+);
+[$reusableDocsDeploymentCode, $reusableDocsDeploymentOutput] = $run($reusableDocsDeployment);
+if (
+    $reusableDocsDeploymentCode !== 1
+    || str_contains($reusableDocsDeploymentOutput, 'workflow.reusable_docs_deployment') === false
+) {
+    fwrite(STDERR, "Reusable docs deployment secrets were not rejected:\n{$reusableDocsDeploymentOutput}\n");
+    exit(67);
+}
+
 $archive = $makeFixture('filament-example');
 mkdir($archive.'/playwright-report', 0777, true);
 file_put_contents($archive.'/playwright-report/report.html', "<html></html>\n");
