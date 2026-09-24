@@ -94,6 +94,17 @@ $assertContains($tmp, 'https://docs.pedromonteiro.dev/filament-example/', 'READM
 $assertContains($tmp, 'uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@'.$workflowRef, '.github/workflows/tests.yml');
 $assertContains($tmp, 'standard-ref: '.$workflowRef, '.github/workflows/standard.yml');
 $assertContains($tmp, 'standard-ref: '.$workflowRef, '.github/workflows/docs-release.yml');
+$assertContains($tmp, 'environment: docs-production', '.github/workflows/docs-release.yml');
+$assertContains($tmp, 'DOCS_SSH_PRIVATE_KEY', '.github/workflows/docs-release.yml');
+$assertContains($tmp, 'DOCS_SSH_KNOWN_HOSTS', '.github/workflows/docs-release.yml');
+$assertContains($tmp, 'DOCS_HOST', '.github/workflows/docs-release.yml');
+$assertContains($tmp, 'DOCS_USER', '.github/workflows/docs-release.yml');
+$assertContains($tmp, 'ref: '.$workflowRef, '.github/workflows/docs-release.yml');
+$assertContains($tmp, 'package-manager-cache: false', '.github/workflows/docs-release.yml');
+$generatedReleaseWorkflow = (string) file_get_contents($tmp.'/.github/workflows/docs-release.yml');
+if (str_contains($generatedReleaseWorkflow, 'secrets: inherit') || str_contains($generatedReleaseWorkflow, '${{ github.sha }}')) {
+    $fail('Generated release workflow has unsafe or unpinned secret/tooling configuration.');
+}
 $assertContains($tmp, 'mortalkiller/filament-package-standard/blob/2.x/docs/package-standard.md', 'AGENTS.md');
 $assertExists($tmp, 'src/FilamentExampleServiceProvider.php');
 $assertExists($tmp, 'src/FilamentExamplePlugin.php');
