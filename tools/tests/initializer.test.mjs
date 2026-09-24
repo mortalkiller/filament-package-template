@@ -40,6 +40,16 @@ test('new packages pin both external workflows and tooling to the requested SHA'
       assert.ok(content.includes(`standard-ref: ${sha}`));
       assert.ok(!content.includes('${{ github.sha }}'));
     }
+    const releaseWorkflow = readFileSync(join(root, '.github/workflows/docs-release.yml'), 'utf8');
+    assert.ok(releaseWorkflow.includes('environment: docs-production'));
+    assert.ok(releaseWorkflow.includes('DOCS_SSH_PRIVATE_KEY'));
+    assert.ok(releaseWorkflow.includes('DOCS_SSH_KNOWN_HOSTS'));
+    assert.ok(releaseWorkflow.includes('DOCS_HOST'));
+    assert.ok(releaseWorkflow.includes('DOCS_USER'));
+    assert.ok(releaseWorkflow.includes(`ref: ${sha}`));
+    assert.ok(releaseWorkflow.includes('package-manager-cache: false'));
+    assert.ok(releaseWorkflow.includes("dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}"));
+    assert.ok(!releaseWorkflow.includes('secrets: inherit'));
     assert.ok(!existsSync(join(root, '.github/workflows/reusable-docs-release.yml')));
     assert.ok(readFileSync(join(root, 'AGENTS.md'), 'utf8').includes('mortalkiller/filament-package-standard/blob/2.x/docs/package-standard.md'));
     const composer = JSON.parse(readFileSync(join(root, 'composer.json'), 'utf8'));

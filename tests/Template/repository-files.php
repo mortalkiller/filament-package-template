@@ -62,4 +62,36 @@ foreach ([
     }
 }
 
+$docsReleaseWorkflow = $root.'/.github/workflows/docs-release.yml';
+$reusableDocsReleaseWorkflow = $root.'/.github/workflows/reusable-docs-release.yml';
+if (! is_file($docsReleaseWorkflow) || ! is_file($reusableDocsReleaseWorkflow)) {
+    fwrite(STDERR, "Missing release documentation workflow files\n");
+    exit(7);
+}
+
+$docsReleaseContent = (string) file_get_contents($docsReleaseWorkflow);
+foreach ([
+    'environment: docs-production',
+    'DOCS_SSH_PRIVATE_KEY',
+    'DOCS_SSH_KNOWN_HOSTS',
+    'DOCS_HOST',
+    'DOCS_USER',
+    'package-manager-cache: false',
+] as $needle) {
+    if (! str_contains($docsReleaseContent, $needle)) {
+        fwrite(STDERR, "Missing [{$needle}] in [.github/workflows/docs-release.yml]\n");
+        exit(8);
+    }
+}
+
+$reusableDocsReleaseContent = (string) file_get_contents($reusableDocsReleaseWorkflow);
+if (
+    str_contains($reusableDocsReleaseContent, 'secrets.DOCS_')
+    || str_contains($reusableDocsReleaseContent, 'environment: docs-production')
+    || str_contains($reusableDocsReleaseContent, 'environment: ${{ inputs.environment-name }}')
+) {
+    fwrite(STDERR, "Reusable release workflow must not own deployment secrets or environments\n");
+    exit(9);
+}
+
 echo "repository files smoke test passed\n";

@@ -22,6 +22,8 @@ final class WorkflowSecurityCheck
 
         $unsafeSecrets = [];
         $legacySelfRepository = [];
+        $reusableDocsDeployment = [];
+        $missingLocalDocsDeployment = [];
 
         $iterator = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
@@ -58,6 +60,46 @@ final class WorkflowSecurityCheck
                     $relative,
                 );
             }
+
+            if (
+                $file->getFilename() === 'reusable-docs-release.yml'
+                && (
+                    str_contains($content, 'secrets.DOCS_')
+                    || str_contains($content, 'environment: docs-production')
+                    || str_contains($content, 'environment-name:')
+                )
+            ) {
+                $reusableDocsDeployment[] = $relative;
+                $result->fail(
+                    'workflow.reusable_docs_deployment',
+                    'Reusable release documentation workflows must build verified artifacts only. Environment-scoped deployment secrets belong to the caller repository.',
+                    $relative,
+                );
+            }
+
+            if ($file->getFilename() === 'docs-release.yml' && str_contains($content, 'reusable-docs-release.yml')) {
+                $requiredLocalDeploymentMarkers = [
+                    'environment: docs-production',
+                    'DOCS_SSH_PRIVATE_KEY',
+                    'DOCS_SSH_KNOWN_HOSTS',
+                    'DOCS_HOST',
+                    'DOCS_USER',
+                ];
+
+                foreach ($requiredLocalDeploymentMarkers as $marker) {
+                    if (str_contains($content, $marker)) {
+                        continue;
+                    }
+
+                    $missingLocalDocsDeployment[] = $relative;
+                    $result->fail(
+                        'workflow.docs_release_local_deployment',
+                        'Release documentation callers must own the docs-production deploy job and read its environment-scoped secrets locally.',
+                        $relative,
+                    );
+                    break;
+                }
+            }
         }
 
         if ($unsafeSecrets === []) {
@@ -66,6 +108,14 @@ final class WorkflowSecurityCheck
 
         if ($legacySelfRepository === []) {
             $result->pass('workflow.self_repository', 'GitHub Actions use dedicated self-repository syntax for in-repository actions and workflows.');
+        }
+
+        if ($reusableDocsDeployment === []) {
+            $result->pass('workflow.reusable_docs_deployment', 'Reusable release documentation workflows do not own deployment secrets or environments.');
+        }
+
+        if ($missingLocalDocsDeployment === []) {
+            $result->pass('workflow.docs_release_local_deployment', 'Release documentation callers keep environment-scoped deployment secrets in local jobs.');
         }
     }
 }

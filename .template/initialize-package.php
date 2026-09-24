@@ -241,6 +241,7 @@ $replace = [
     TEMPLATE_SNAKE => $packageSnake,
     '/* __PACKAGE_PLUGIN_REGISTRATION__ */' => $pluginRegistration,
     'standard-ref: ${{ github.sha }}' => 'standard-ref: '.$workflowRef,
+    'ref: ${{ github.sha }} # __TEMPLATE_TOOLING_REF__' => 'ref: '.$workflowRef,
     '"filament_package":"filament/filament"' => '"filament_package":"'.$runtimePackage.'"',
 ];
 foreach (['tests', 'quality', 'docs', 'docs-release', 'browser-tests', 'standard-check'] as $workflow) {
