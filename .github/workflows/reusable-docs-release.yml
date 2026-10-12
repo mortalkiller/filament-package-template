@@ -55,8 +55,8 @@ jobs:
               assert name == 'workflow_dispatch', 'Unsupported publication event.'
               tag = os.environ['REQUESTED_TAG']
               if os.environ['DRY_RUN'] != 'true':
-                  assert re.fullmatch(r'refs/heads/(0|[1-9][0-9]*)\\.x', os.environ['GITHUB_REF']), 'Manual publication must run from a major branch.'
-          assert re.fullmatch(r'v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)', tag), 'A stable vX.Y.Z tag is required.'
+                  assert re.fullmatch(r'refs/heads/(0|[1-9][0-9]*)\.x', os.environ['GITHUB_REF']), 'Manual publication must run from a major branch.'
+          assert re.fullmatch(r'v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)', tag), 'A stable vX.Y.Z tag is required.'
           assert re.fullmatch(r'[a-f0-9]{40}', os.environ['STANDARD_REF']), 'The tooling reference must be a full commit SHA.'
           if os.environ['DRY_RUN'] != 'true':
               assert os.environ['DEPLOY_ENABLED'] == 'true', 'Documentation deployment is disabled.'
