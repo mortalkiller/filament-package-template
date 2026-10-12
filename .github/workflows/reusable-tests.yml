@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       matrix-json:
-        description: JSON strategy matrix containing os, php, laravel, testbench, Filament package/constraint, and optional dependency mode entries.
+        description: JSON strategy matrix containing os, php, laravel, testbench, Filament package/constraint, and optional dependency mode entries and per-matrix legacy advisory exceptions.
         required: true
         type: string
       test-command:
@@ -45,6 +45,20 @@ jobs:
           extensions: intl, mbstring, pdo_sqlite, dom, fileinfo, curl, zip
           coverage: none
           tools: composer:v2
+
+      # Exceptions are opt-in per exact legacy matrix entry, never for consumers.
+      # This global Composer setting is isolated to the current GitHub Actions runner.
+      - name: Allow legacy Filament advisory in compatibility job
+        if: ${{ matrix.compatibility_advisory != '' }}
+        shell: bash
+        env:
+          COMPATIBILITY_ADVISORY: ${{ matrix.compatibility_advisory }}
+        run: |
+          set -euo pipefail
+          composer config --global --merge --json policy.advisories.ignore-id \
+            "$(jq -cn --arg id "$COMPATIBILITY_ADVISORY" \
+              '{($id): "CI-only compatibility testing of a legacy dependency; this exception must not be used in production."}')"
+          echo "::warning title=Legacy compatibility advisory::Ignoring $COMPATIBILITY_ADVISORY in this isolated CI job only."
 
       - name: Validate Composer package
         run: composer validate --strict --no-check-lock
