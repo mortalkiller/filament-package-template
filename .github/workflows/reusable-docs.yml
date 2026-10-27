@@ -12,7 +12,7 @@ on:
         type: string
       node-version:
         required: false
-        default: '22.20.0'
+        default: '22.23.4'
         type: string
       deploy:
         required: false
