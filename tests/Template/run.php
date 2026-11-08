@@ -118,6 +118,7 @@ $assertContains($tmp, 'DOCS_HOST', '.github/workflows/docs-release.yml');
 $assertContains($tmp, 'DOCS_USER', '.github/workflows/docs-release.yml');
 $assertContains($tmp, 'ref: '.$workflowRef, '.github/workflows/docs-release.yml');
 $assertContains($tmp, 'package-manager-cache: false', '.github/workflows/docs-release.yml');
+$assertContains($tmp, "node-version: '22.23.4'", '.github/workflows/docs-release.yml');
 $assertContains($tmp, 'repository: mortalkiller/filament-package-template'."\n", '.github/workflows/docs-release.yml');
 $assertNotContains($tmp, 'repository: mortalkiller/filament-example', '.github/workflows/docs-release.yml');
 $assertContains($tmp, "favicon: '/favicon-32x32.png'", 'docs-site/astro.config.mjs');
