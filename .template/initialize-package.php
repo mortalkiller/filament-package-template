@@ -210,10 +210,33 @@ if ($capabilities['stubs']) {
 if ($capabilities['assets']) {
     $copyTree($scaffolds.'/assets/bin', $root.'/bin');
     $copyTree($scaffolds.'/assets/resources', $root.'/resources');
+
+    // Only sources that bin/build.js compiles into resources/dist stay out of the dist archive.
+    $gitattributesPath = $root.'/.gitattributes';
+    $gitattributes = is_file($gitattributesPath) ? (string) file_get_contents($gitattributesPath) : '';
+    $sourceAssetRules = "/resources/css export-ignore\n/resources/js export-ignore\n";
+    if (! str_contains($gitattributes, $sourceAssetRules)) {
+        $gitattributes = rtrim($gitattributes, "\n");
+        $gitattributes .= ($gitattributes === '' ? '' : "\n").$sourceAssetRules;
+        if (file_put_contents($gitattributesPath, $gitattributes) === false) {
+            $fail('Unable to update .gitattributes.');
+        }
+    }
 }
 if ($capabilities['workbench']) {
     $copyTree($scaffolds.'/workbench/testbench.yaml', $root.'/testbench.yaml');
     $copyTree($scaffolds.'/workbench/workbench', $root.'/workbench');
+    if (! $hasPanelPlugin) {
+        $panelProviderPath = $root.'/workbench/app/Providers/Filament/AdminPanelProvider.php';
+        $panelProvider = (string) file_get_contents($panelProviderPath);
+        $panelProviderWithoutPlugin = str_replace([
+            'use '.TEMPLATE_NAMESPACE.'\\'.TEMPLATE_STEM."Plugin;\n",
+            '            ->plugin('.TEMPLATE_STEM."Plugin::make())\n",
+        ], '', $panelProvider);
+        if ($panelProviderWithoutPlugin === $panelProvider || file_put_contents($panelProviderPath, $panelProviderWithoutPlugin) === false) {
+            $fail('Unable to remove the plugin registration from the Workbench panel provider.');
+        }
+    }
 }
 if ($capabilities['browser-tests']) {
     $copyTree($scaffolds.'/browser/playwright.config.mjs', $root.'/playwright.config.mjs');
@@ -228,9 +251,6 @@ if (! copy($packageReadme, $root.'/README.md')) {
     $fail('Unable to create the package README.');
 }
 
-$pluginRegistration = $hasPanelPlugin
-    ? "\n            ->plugin(\\{$namespace}\\{$stem}Plugin::make())"
-    : '';
 $replace = [
     TEMPLATE_SLUG => $slug,
     TEMPLATE_TITLE => $title,
@@ -239,7 +259,6 @@ $replace = [
     TEMPLATE_STEM => $stem,
     TEMPLATE_DESCRIPTION => $description,
     TEMPLATE_SNAKE => $packageSnake,
-    '/* __PACKAGE_PLUGIN_REGISTRATION__ */' => $pluginRegistration,
     'standard-ref: ${{ github.sha }}' => 'standard-ref: '.$workflowRef,
     'ref: ${{ github.sha }} # __TEMPLATE_TOOLING_REF__' => 'ref: '.$workflowRef,
     '"filament_package":"filament/filament"' => '"filament_package":"'.$runtimePackage.'"',
@@ -258,6 +277,12 @@ $iterator = new RecursiveIteratorIterator(new RecursiveCallbackFilterIterator(
     },
 ));
 
+// References that must keep pointing at the template repository, not at the generated package.
+$canonicalReferences = [
+    'mortalkiller/filament-package-template/.github/workflows/' => '__CANONICAL_PACKAGE_WORKFLOWS__/',
+    'repository: mortalkiller/filament-package-template'."\n" => '__CANONICAL_TEMPLATE_REPOSITORY__'."\n",
+];
+
 /** @var list<array{path:string,content:string}> $writes */
 $writes = [];
 foreach ($iterator as $file) {
@@ -269,17 +294,9 @@ foreach ($iterator as $file) {
     if (! is_string($content) || str_contains($content, "\0")) {
         continue;
     }
-    $protected = str_replace(
-        'mortalkiller/filament-package-template/.github/workflows/',
-        '__CANONICAL_PACKAGE_WORKFLOWS__/',
-        $content,
-    );
+    $protected = str_replace(array_keys($canonicalReferences), array_values($canonicalReferences), $content);
     $updated = str_replace(array_keys($replace), array_values($replace), $protected);
-    $updated = str_replace(
-        '__CANONICAL_PACKAGE_WORKFLOWS__/',
-        'mortalkiller/filament-package-template/.github/workflows/',
-        $updated,
-    );
+    $updated = str_replace(array_values($canonicalReferences), array_keys($canonicalReferences), $updated);
     if ($updated !== $content) {
         $writes[] = ['path' => $path, 'content' => $updated];
     }
@@ -459,7 +476,7 @@ foreach (['AGENTS.md' => $agentInstructions, 'CONTRIBUTING.md' => $contributing]
     }
 }
 
-$templateOnly = ['tools', 'tests/Template', 'tests/standard-checker', 'docs/package-standard.md', 'docs/verification.md'];
+$templateOnly = ['tools', 'tests/Template', 'tests/StandardChecker', 'tests/standard-checker', 'docs/package-standard.md', 'docs/verification.md'];
 foreach (['tests', 'quality', 'docs', 'docs-release', 'browser-tests', 'standard-check'] as $workflow) {
     $templateOnly[] = '.github/workflows/reusable-'.$workflow.'.yml';
 }

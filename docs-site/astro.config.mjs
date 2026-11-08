@@ -14,7 +14,8 @@ export default defineConfig({
     starlight({
       title: 'Filament Package Template',
       description: 'Template for MortalKiller Filament packages.',
-      favicon: `${releaseBasePath}/favicon-32x32.png`,
+      // Starlight prefixes the base path itself.
+      favicon: '/favicon-32x32.png',
       head: [
         { tag: 'link', attrs: { rel: 'icon', href: `${releaseBasePath}/favicon.ico`, sizes: 'any' } },
         { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '96x96', href: `${releaseBasePath}/favicon-96x96.png` } },

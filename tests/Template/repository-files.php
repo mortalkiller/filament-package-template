@@ -36,6 +36,8 @@ foreach ([
     "site: 'https://docs.pedromonteiro.dev'",
     'https://github.com/mortalkiller/filament-package-template',
     'https://pedromonteiro.dev',
+    // Starlight prefixes the base path to `favicon` itself.
+    "favicon: '/favicon-32x32.png'",
 ] as $needle) {
     if (! str_contains($astroContent, $needle)) {
         fwrite(STDERR, "Missing [{$needle}] in [docs-site/astro.config.mjs]\n");
