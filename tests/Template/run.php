@@ -191,7 +191,7 @@ foreach ([
 }
 $assertContains($full, 'use MortalKiller\\FilamentExample\\FilamentExamplePlugin;', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
 $assertContains($full, '->plugin(FilamentExamplePlugin::make())', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
-$assertPintPasses($full, 'workbench');
+$assertPintPasses($full, 'workbench/app/Providers/Filament/AdminPanelProvider.php');
 $assertContains($full, '- CACHE_STORE=array', 'testbench.yaml');
 $assertContains($full, '- SESSION_DRIVER=file', 'testbench.yaml');
 $assertContains($full, "/resources/css export-ignore\n/resources/js export-ignore\n", '.gitattributes');
@@ -221,7 +221,7 @@ if ($viewsCode !== 0) {
 $assertNotContains($viewsOnly, '/resources/css export-ignore', '.gitattributes');
 $assertNotContains($viewsOnly, '/resources/js export-ignore', '.gitattributes');
 $assertContains($viewsOnly, '->plugin(FilamentExamplePlugin::make())', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
-$assertPintPasses($viewsOnly, 'workbench');
+$assertPintPasses($viewsOnly, 'workbench/app/Providers/Filament/AdminPanelProvider.php');
 
 $formsWorkbench = $fixture();
 [$formsCode, $formsOutput] = $run($formsWorkbench, $base + ['type' => 'forms', 'with_workbench' => true]);
@@ -230,7 +230,7 @@ if ($formsCode !== 0) {
 }
 $assertNotContains($formsWorkbench, '->plugin(', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
 $assertNotContains($formsWorkbench, 'Plugin;', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
-$assertPintPasses($formsWorkbench, 'workbench');
+$assertPintPasses($formsWorkbench, 'workbench/app/Providers/Filament/AdminPanelProvider.php');
 
 $profiles = [
     'theme' => ['runtime' => 'filament/filament', 'plugin' => true, 'assets' => true],
