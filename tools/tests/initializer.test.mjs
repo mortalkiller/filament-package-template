@@ -20,16 +20,22 @@ function fixture(partial = false) {
   cpSync(join(source, '.github/workflows'), join(root, '.github/workflows'), { recursive: true });
   cpSync(join(source, 'docs-site/src/components'), join(root, 'docs-site/src/components'), { recursive: true });
   cpSync(join(source, 'docs-site/src/styles'), join(root, 'docs-site/src/styles'), { recursive: true });
+  cpSync(join(source, 'docs-site/astro.config.mjs'), join(root, 'docs-site/astro.config.mjs'));
+  cpSync(join(source, '.template/scaffolds'), join(root, '.template/scaffolds'), { recursive: true });
+  cpSync(join(source, '.gitattributes'), join(root, '.gitattributes'));
+  cpSync(join(source, '.github/dependabot.yml'), join(root, '.github/dependabot.yml'));
+  cpSync(join(source, 'tests/StandardChecker'), join(root, 'tests/StandardChecker'), { recursive: true });
   if (partial) {
     put('.template/.initializing.json', JSON.stringify(state));
     put('.github/workflows/tests.yml', `jobs:\n  tests:\n    uses: mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@${sha}\n`);
   }
   return root;
 }
-function initialize(root, ref = sha) {
+function initialize(root, ref = sha, flags = []) {
   const args = Object.entries(initArgs).map(([key, value]) => `--${key}=${value}`);
-  return execFileSync('php', [join(root, '.template/initialize-package.php'), ...args, `--workflow-ref=${ref}`], { env: { ...process.env, PACKAGE_TEMPLATE_ROOT: root }, encoding: 'utf8', stdio: 'pipe' });
+  return execFileSync('php', [join(root, '.template/initialize-package.php'), ...args, `--workflow-ref=${ref}`, ...flags], { env: { ...process.env, PACKAGE_TEMPLATE_ROOT: root }, encoding: 'utf8', stdio: 'pipe' });
 }
+const toolingCheckout = 'repository: mortalkiller/filament-package-template\n';
 test('new packages pin both external workflows and tooling to the requested SHA', () => {
   const root = fixture();
   try {
@@ -47,6 +53,8 @@ test('new packages pin both external workflows and tooling to the requested SHA'
     assert.ok(releaseWorkflow.includes('DOCS_HOST'));
     assert.ok(releaseWorkflow.includes('DOCS_USER'));
     assert.ok(releaseWorkflow.includes(`ref: ${sha}`));
+    assert.ok(releaseWorkflow.includes(toolingCheckout), 'the deploy job checks out the pinned tooling from the template repository');
+    assert.ok(!releaseWorkflow.includes('repository: mortalkiller/filament-example'));
     assert.ok(releaseWorkflow.includes('package-manager-cache: false'));
     assert.ok(releaseWorkflow.includes("dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run }}"));
     assert.ok(!releaseWorkflow.includes('secrets: inherit'));
@@ -69,6 +77,53 @@ test('resuming initialization does not rewrite canonical workflow ownership', ()
     initialize(root);
     const content = readFileSync(join(root, '.github/workflows/tests.yml'), 'utf8');
     assert.ok(content.includes(`mortalkiller/filament-package-template/.github/workflows/reusable-tests.yml@${sha}`));
+    assert.ok(readFileSync(join(root, '.github/workflows/docs-release.yml'), 'utf8').includes(toolingCheckout));
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+test('template-only checker tests are removed with their runner', () => {
+  const root = fixture();
+  try {
+    initialize(root);
+    assert.ok(!existsSync(join(root, 'tests/StandardChecker')));
+    assert.ok(!existsSync(join(root, 'tests/standard-checker')));
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+test('source assets are only export-ignored when the assets capability builds them to dist', () => {
+  for (const [flags, ignored] of [[[], false], [['--with-views'], false], [['--with-assets'], true], [['--type=theme'], true]]) {
+    const root = fixture();
+    try {
+      initialize(root, sha, flags);
+      const attributes = readFileSync(join(root, '.gitattributes'), 'utf8');
+      for (const path of ['/resources/css', '/resources/js']) {
+        assert.equal(attributes.includes(`${path} export-ignore\n`), ignored, `${path} with ${flags.join(' ') || 'no flags'}`);
+      }
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  }
+});
+test('the Workbench demo panel imports the plugin and keeps cache and session off the database', () => {
+  for (const [flags, plugin] of [[['--with-workbench'], true], [['--with-workbench', '--type=forms'], false]]) {
+    const root = fixture();
+    try {
+      initialize(root, sha, flags);
+      const provider = readFileSync(join(root, 'workbench/app/Providers/Filament/AdminPanelProvider.php'), 'utf8');
+      assert.equal(provider.includes('use MortalKiller\\FilamentExample\\FilamentExamplePlugin;\n'), plugin);
+      assert.equal(provider.includes('            ->plugin(FilamentExamplePlugin::make())\n'), plugin);
+      assert.ok(!provider.includes('->plugin(\\'), 'no inline fully qualified plugin class');
+      assert.ok(!/^[ \t]+$/m.test(provider), 'no whitespace-only lines');
+      assert.ok(!provider.includes('__PACKAGE_'), 'no leftover placeholders');
+      const testbench = readFileSync(join(root, 'testbench.yaml'), 'utf8');
+      assert.match(testbench, /^env:\n(?:  - .+\n)*  - CACHE_STORE=array\n/m);
+      assert.match(testbench, /^env:\n(?:  - .+\n)*  - SESSION_DRIVER=file\n/m);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  }
+});
+test('the Starlight favicon is given without the base path that Starlight prefixes itself', () => {
+  const root = fixture();
+  try {
+    initialize(root);
+    const config = readFileSync(join(root, 'docs-site/astro.config.mjs'), 'utf8');
+    assert.ok(config.includes("favicon: '/favicon-32x32.png',"));
+    assert.ok(!/favicon: `\$\{(?:releaseBasePath|basePath)\}/.test(config));
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 test('initialized documentation preserves the themed selector and rewrites its manifest root', () => {

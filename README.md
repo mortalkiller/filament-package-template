@@ -86,6 +86,8 @@ Optional capabilities are:
 
 `theme` implies assets. Browser tests imply Workbench. Workbench on a partial profile adds full `filament/filament` only to development dependencies.
 
+`--with-assets` builds `resources/css` and `resources/js` into `resources/dist` and keeps those sources out of the Composer archive. Without it, files under `resources/` ship as they are, so plain CSS or JavaScript next to views stays installable.
+
 The initializer is a one-time operation. It:
 
 - rewrites the Composer package identity;

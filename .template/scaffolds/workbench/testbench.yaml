@@ -1,5 +1,11 @@
 laravel: '@testbench'
 
+# Workbench runs without the cache and sessions tables; keep both off the
+# database driver so Livewire requests work under `testbench serve`.
+env:
+  - CACHE_STORE=array
+  - SESSION_DRIVER=file
+
 providers:
   - MortalKiller\FilamentPackageTemplate\FilamentPackageTemplateServiceProvider
   - Workbench\App\Providers\WorkbenchServiceProvider

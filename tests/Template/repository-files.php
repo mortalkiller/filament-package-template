@@ -36,6 +36,8 @@ foreach ([
     "site: 'https://docs.pedromonteiro.dev'",
     'https://github.com/mortalkiller/filament-package-template',
     'https://pedromonteiro.dev',
+    // Starlight prefixes the base path to `favicon` itself.
+    "favicon: '/favicon-32x32.png'",
 ] as $needle) {
     if (! str_contains($astroContent, $needle)) {
         fwrite(STDERR, "Missing [{$needle}] in [docs-site/astro.config.mjs]\n");
@@ -92,6 +94,39 @@ if (
 ) {
     fwrite(STDERR, "Reusable release workflow must not own deployment secrets or environments\n");
     exit(9);
+}
+
+// Every workflow that builds or publishes the docs must run a Node.js version the docs site accepts.
+$docsPackage = json_decode((string) file_get_contents($root.'/docs-site/package.json'), true, flags: JSON_THROW_ON_ERROR);
+if (! preg_match('/^>=(\d+\.\d+\.\d+)$/', (string) ($docsPackage['engines']['node'] ?? ''), $engine)) {
+    fwrite(STDERR, "docs-site/package.json must declare engines.node as >=X.Y.Z\n");
+    exit(10);
+}
+$docsNodeVersions = [
+    '.github/workflows/reusable-docs.yml' => '/^      node-version:\n(?:        .+\n)*?        default: \'([^\']+)\'$/m',
+    '.github/workflows/reusable-docs-release.yml' => '/^      node-version:\n(?:        .+\n)*?        default: \'([^\']+)\'$/m',
+    '.github/workflows/docs-release.yml' => '/^          node-version: \'([^\']+)\'$/m',
+];
+foreach ($docsNodeVersions as $path => $pattern) {
+    $content = (string) file_get_contents($root.'/'.$path);
+    if (! preg_match_all($pattern, $content, $versions) || $versions[1] === []) {
+        fwrite(STDERR, "Missing pinned Node.js version in [{$path}]\n");
+        exit(11);
+    }
+    foreach ($versions[1] as $version) {
+        if (version_compare($version, $engine[1], '<')) {
+            fwrite(STDERR, "Node.js {$version} in [{$path}] is older than the docs site minimum {$engine[1]}\n");
+            exit(12);
+        }
+    }
+}
+if (! str_contains($reusableDocsReleaseContent, 'node-version: ${{ inputs.node-version }}')) {
+    fwrite(STDERR, "Reusable release workflow must set up Node.js from its node-version input\n");
+    exit(13);
+}
+if (preg_match('/node-version: \'[^\']+\'/', $reusableDocsReleaseContent) === 1) {
+    fwrite(STDERR, "Reusable release workflow must not hard-code a Node.js version in its steps\n");
+    exit(14);
 }
 
 echo "repository files smoke test passed\n";

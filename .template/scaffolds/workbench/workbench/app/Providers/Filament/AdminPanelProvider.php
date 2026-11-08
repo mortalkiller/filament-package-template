@@ -14,6 +14,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use MortalKiller\FilamentPackageTemplate\FilamentPackageTemplatePlugin;
 
 final class AdminPanelProvider extends PanelProvider
 {
@@ -26,7 +27,7 @@ final class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
-            /* __PACKAGE_PLUGIN_REGISTRATION__ */
+            ->plugin(FilamentPackageTemplatePlugin::make())
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

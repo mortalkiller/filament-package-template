@@ -16,5 +16,3 @@
 /playwright.config.mjs export-ignore
 /testbench.yaml export-ignore
 /workbench export-ignore
-/resources/css export-ignore
-/resources/js export-ignore

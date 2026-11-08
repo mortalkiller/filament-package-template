@@ -79,6 +79,23 @@ $assertMissing = static function (string $root, string $path) use ($fail): void 
         $fail("Unexpected generated path exists: {$path}");
     }
 };
+$assertNotContains = static function (string $root, string $needle, string $path) use ($fail): void {
+    $full = $root.'/'.$path;
+    if (! is_file($full) || str_contains((string) file_get_contents($full), $needle)) {
+        $fail("Unexpected [{$needle}] in [{$path}]");
+    }
+};
+$assertPintPasses = static function (string $root, string $path) use ($repo, $fail): void {
+    $pint = $repo.'/vendor/bin/pint';
+    if (! is_file($pint)) {
+        $fail('Laravel Pint is missing; run composer install before the initializer smoke test.');
+    }
+    $command = escapeshellarg(PHP_BINARY).' '.escapeshellarg($pint).' --test --config='.escapeshellarg($root.'/pint.json').' '.escapeshellarg($root.'/'.$path).' 2>&1';
+    exec($command, $output, $code);
+    if ($code !== 0) {
+        $fail("Generated [{$path}] does not pass Pint:\n".implode("\n", $output));
+    }
+};
 
 $tmp = $fixture();
 [$code, $output] = $run($tmp, $base);
@@ -101,6 +118,12 @@ $assertContains($tmp, 'DOCS_HOST', '.github/workflows/docs-release.yml');
 $assertContains($tmp, 'DOCS_USER', '.github/workflows/docs-release.yml');
 $assertContains($tmp, 'ref: '.$workflowRef, '.github/workflows/docs-release.yml');
 $assertContains($tmp, 'package-manager-cache: false', '.github/workflows/docs-release.yml');
+$assertContains($tmp, "node-version: '22.23.4'", '.github/workflows/docs-release.yml');
+$assertContains($tmp, 'repository: mortalkiller/filament-package-template'."\n", '.github/workflows/docs-release.yml');
+$assertNotContains($tmp, 'repository: mortalkiller/filament-example', '.github/workflows/docs-release.yml');
+$assertContains($tmp, "favicon: '/favicon-32x32.png'", 'docs-site/astro.config.mjs');
+$assertNotContains($tmp, '/resources/css export-ignore', '.gitattributes');
+$assertNotContains($tmp, '/resources/js export-ignore', '.gitattributes');
 $generatedReleaseWorkflow = (string) file_get_contents($tmp.'/.github/workflows/docs-release.yml');
 if (str_contains($generatedReleaseWorkflow, 'secrets: inherit') || str_contains($generatedReleaseWorkflow, '${{ github.sha }}')) {
     $fail('Generated release workflow has unsafe or unpinned secret/tooling configuration.');
@@ -124,7 +147,7 @@ if (isset($composer['require-dev']['rector/rector'])) {
 foreach (['config', 'database', 'bin', 'workbench', 'package.json', 'playwright.config.mjs', '.github/workflows/browser-tests.yml', 'rector.php'] as $path) {
     $assertMissing($tmp, $path);
 }
-foreach (['.template', 'tools', 'tests/Template', 'tests/standard-checker', '.github/workflows/reusable-docs-release.yml'] as $removed) {
+foreach (['.template', 'tools', 'tests/Template', 'tests/standard-checker', 'tests/StandardChecker', '.github/workflows/reusable-docs-release.yml'] as $removed) {
     $assertMissing($tmp, $removed);
 }
 
@@ -166,7 +189,12 @@ foreach ([
 ] as $path) {
     $assertExists($full, $path);
 }
-$assertContains($full, '->plugin(\\MortalKiller\\FilamentExample\\FilamentExamplePlugin::make())', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
+$assertContains($full, 'use MortalKiller\\FilamentExample\\FilamentExamplePlugin;', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
+$assertContains($full, '->plugin(FilamentExamplePlugin::make())', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
+$assertPintPasses($full, 'workbench/app/Providers/Filament/AdminPanelProvider.php');
+$assertContains($full, '- CACHE_STORE=array', 'testbench.yaml');
+$assertContains($full, '- SESSION_DRIVER=file', 'testbench.yaml');
+$assertContains($full, "/resources/css export-ignore\n/resources/js export-ignore\n", '.gitattributes');
 $assertContains($full, 'reusable-browser-tests.yml@'.$workflowRef, '.github/workflows/browser-tests.yml');
 $fullComposer = json_decode((string) file_get_contents($full.'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
 if (($fullComposer['autoload-dev']['psr-4']['Workbench\\'] ?? null) !== 'workbench/') {
@@ -184,6 +212,25 @@ foreach (['build', 'dev', 'test:browser'] as $script) {
         $fail("Missing package.json script: {$script}");
     }
 }
+
+$viewsOnly = $fixture();
+[$viewsCode, $viewsOutput] = $run($viewsOnly, $base + ['with_views' => true, 'with_workbench' => true]);
+if ($viewsCode !== 0) {
+    $fail($viewsOutput);
+}
+$assertNotContains($viewsOnly, '/resources/css export-ignore', '.gitattributes');
+$assertNotContains($viewsOnly, '/resources/js export-ignore', '.gitattributes');
+$assertContains($viewsOnly, '->plugin(FilamentExamplePlugin::make())', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
+$assertPintPasses($viewsOnly, 'workbench/app/Providers/Filament/AdminPanelProvider.php');
+
+$formsWorkbench = $fixture();
+[$formsCode, $formsOutput] = $run($formsWorkbench, $base + ['type' => 'forms', 'with_workbench' => true]);
+if ($formsCode !== 0) {
+    $fail($formsOutput);
+}
+$assertNotContains($formsWorkbench, '->plugin(', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
+$assertNotContains($formsWorkbench, 'Plugin;', 'workbench/app/Providers/Filament/AdminPanelProvider.php');
+$assertPintPasses($formsWorkbench, 'workbench/app/Providers/Filament/AdminPanelProvider.php');
 
 $profiles = [
     'theme' => ['runtime' => 'filament/filament', 'plugin' => true, 'assets' => true],
@@ -221,6 +268,7 @@ file_put_contents($partial.'/.template/.initializing.json', json_encode($state, 
 if ($partialCode !== 0 || file_exists($partial.'/.template')) {
     $fail('Matching partial initialization did not resume safely: '.$partialOutput);
 }
+$assertContains($partial, 'repository: mortalkiller/filament-package-template'."\n", '.github/workflows/docs-release.yml');
 $mismatch = $fixture();
 file_put_contents($mismatch.'/.template/.initializing.json', json_encode($state, JSON_THROW_ON_ERROR));
 [$mismatchCode, $mismatchOutput] = $run($mismatch, array_replace($base, ['slug' => 'filament-different']));

@@ -34,6 +34,8 @@ Optional capabilities:
 
 `theme` implies assets and `browser-tests` implies Workbench. Partial profiles only receive full `filament/filament` in development dependencies when Workbench needs a complete demo panel.
 
+`--with-assets` builds `resources/css` and `resources/js` into `resources/dist` and keeps those sources out of the Composer archive. Without it, files under `resources/` ship as they are, so plain CSS or JavaScript next to views stays installable.
+
 The initializer rewrites package identity, selects the runtime Filament dependency, creates the Package Tools/provider scaffold, materializes selected capabilities, pins shared workflows to the validated SHA, and removes template-only files. Interrupted initialization resumes only when the complete saved profile/capability state matches.
 
 Generated packages consume `mortalkiller/filament-package-standard:^2.0` directly in `require-dev`. Standard v2 supports PHP 8.2+, so the maintainer tooling and the template's minimum runtime boundary are aligned.
